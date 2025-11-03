@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="theknife.ui.javafx.AddRestaurantController">
+
+    <center>
+        <VBox spacing="10">
+            <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+
+            <Label text="Nuovo ristorante" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+
+            <Label text="Nome *"/>
+            <TextField fx:id="nameField" promptText="Nome ristorante"/>
+
+            <Label text="Nazione"/>
+            <TextField fx:id="nationField" promptText="es. Italia"/>
+
+            <Label text="Città"/>
+            <TextField fx:id="cityField" promptText="es. Milano"/>
+
+            <Label text="Indirizzo"/>
+            <TextField fx:id="addressField" promptText="Via..."/>
+
+            <HBox spacing="10">
+                <VBox spacing="5">
+                    <Label text="Latitudine"/>
+                    <TextField fx:id="latField" promptText="45.46"/>
+                </VBox>
+                <VBox spacing="5">
+                    <Label text="Longitudine"/>
+                    <TextField fx:id="lonField" promptText="9.18"/>
+                </VBox>
+            </HBox>
+
+            <Label text="Prezzo medio (€)"/>
+            <TextField fx:id="priceField" promptText="es. 60"/>
+
+            <Label text="Tipo di cucina"/>
+            <TextField fx:id="cuisineField" promptText="Italian, Gourmet..."/>
+
+            <HBox spacing="10">
+                <CheckBox fx:id="deliveryCheck" text="Consegna"/>
+                <CheckBox fx:id="bookingCheck" text="Prenotazione online"/>
+            </HBox>
+
+            <Label text="Sito web"/>
+            <TextField fx:id="websiteField" promptText="https://..."/>
+
+            <Label fx:id="errorLabel" textFill="red"/>
+
+            <HBox spacing="10">
+                <Button text="Salva" onAction="#onSave"/>
+                <Button text="Annulla" onAction="#onCancel"/>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="theknife.ui.javafx.MainController"
+            stylesheets="@style.css"
+            styleClass="app-root">
+
+    <!-- BARRA IN ALTO -->
+    <top>
+        <HBox spacing="10" styleClass="top-bar">
+            <children>
+                <Label text="🍴 TheKnife" styleClass="logo-label"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Label fx:id="roleLabel" />
+                <Button fx:id="loginBtn" text="Accedi" onAction="#onShowLogin"/>
+                <Button fx:id="registerBtn" text="Registrati" onAction="#onShowRegister"/>
+                <Button fx:id="favoritesBtn"
+                        text="I miei preferiti"
+                        visible="false"
+                        managed="false"
+                        onAction="#onShowFavorites"/>
+                <Button fx:id="logoutBtn" text="Logout" onAction="#onLogout" visible="false"/>
+            </children>
+        </HBox>
+    </top>
+
+    <!-- CONTENUTO CENTRALE -->
+    <center>
+        <BorderPane styleClass="content-pane">
+            <top>
+                <Label text="Ristoranti" styleClass="section-title"/>
+            </top>
+            <center>
+                <VBox spacing="10" style="-fx-padding: 10;">
+                    <!-- BARRA FILTRI -->
+                    <HBox spacing="10">
+                        <TextField fx:id="searchField" promptText="Cerca per nome o città..." />
+                        <ComboBox fx:id="cuisineFilter" promptText="Cucina" />
+                        <CheckBox fx:id="deliveryFilter" text="Delivery" />
+                        <CheckBox fx:id="bookingFilter" text="Prenotazione" />
+                        <Button text="Filtra" onAction="#onApplyFilters"/>
+                        <Button text="Reset" onAction="#onResetFilters"/>
+                        <Button text="Filtro avanzato" onAction="#onShowAdvancedFilter"/>
+
+                    </HBox>
+
+                    <!-- LISTA RISTORANTI -->
+                    <ListView fx:id="restaurantList"
+                              styleClass="restaurant-list"
+                              VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </center>
+        </BorderPane>
+    </center>
+
+    <!-- FOOTER -->
+    <bottom>
+        <HBox spacing="10" styleClass="footer-bar">
+            <children>
+                <Label text="TheKnife — lista ristoranti" styleClass="footer-text"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Button fx:id="addReviewBtn" text="Aggiungi recensione" onAction="#onAddReview" styleClass="footer-button"/>
+                <Button fx:id="addRestaurantBtn" text="Aggiungi ristorante" onAction="#onAddRestaurant" styleClass="footer-button"/>
+            </children>
+        </HBox>
+    </bottom>
+
+</BorderPane>

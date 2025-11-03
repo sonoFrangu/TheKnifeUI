@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="theknife.ui.javafx.AdvancedFilterController">
+    <center>
+        <VBox spacing="10">
+            <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+
+            <Label text="Filtro avanzato" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
+
+            <!-- Name -->
+            <Label text="Nome ristorante"/>
+            <TextField fx:id="nameField" promptText="es. Da Vittorio"/>
+
+            <!-- Address -->
+            <Label text="Indirizzo"/>
+            <TextField fx:id="addressField" promptText="via, piazza..."/>
+
+            <!-- City -->
+            <Label text="Città"/>
+            <TextField fx:id="cityField" promptText="Milano, Varese..."/>
+
+            <!-- Nation -->
+            <Label text="Nazione"/>
+            <TextField fx:id="nationField" promptText="Italia, Francia..."/>
+
+            <!-- Price -->
+            <Label text="Prezzo massimo (€)"/>
+            <TextField fx:id="maxPriceField" promptText="es. 80"/>
+
+            <!-- Cuisine -->
+            <Label text="Tipo di cucina"/>
+            <TextField fx:id="cuisineField" promptText="Italian, Seafood, Creative..."/>
+
+            <!-- Facilities -->
+            <Label text="Servizi (testo contiene)"/>
+            <TextField fx:id="facilitiesField" promptText="es. Parking, Terrace"/>
+
+            <HBox spacing="10">
+                <CheckBox fx:id="deliveryCheck" text="Consegna"/>
+                <CheckBox fx:id="bookingCheck" text="Prenotazione online"/>
+                <CheckBox fx:id="greenStarCheck" text="Green Star"/>
+            </HBox>
+
+            <Label fx:id="errorLabel" textFill="red"/>
+
+            <HBox spacing="10">
+                <Button text="Applica" onAction="#onApply"/>
+                <Button text="Annulla" onAction="#onCancel"/>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

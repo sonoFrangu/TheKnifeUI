@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="theknife.ui.javafx.RestaurantDetailsController"
+      spacing="10"
+      styleClass="details-root">
+
+    <padding>
+        <Insets topRightBottomLeft="14"/>
+    </padding>
+
+    <children>
+        <Button fx:id="favBtn" text="Aggiungi ai preferiti" onAction="#onAddToFavorites"/>
+        <!-- Intestazione -->
+        <Label fx:id="nameLabel" styleClass="details-title"/>
+        <Label fx:id="addressLabel" styleClass="details-line"/>
+        <Label fx:id="cityLabel" styleClass="details-line"/>
+        <Label fx:id="priceLabel" styleClass="details-line"/>
+        <Label fx:id="cuisineLabel" styleClass="details-line"/>
+        <Label fx:id="deliveryLabel" styleClass="details-line"/>
+        <Label fx:id="bookingLabel" styleClass="details-line"/>
+
+        <!-- Link cliccabile -->
+        <Hyperlink fx:id="websiteLink" text=""/>
+
+        <Separator/>
+
+        <!-- Mappa -->
+        <WebView fx:id="mapView" prefWidth="600.0" prefHeight="380.0" minWidth="600.0" minHeight="300.0"/>
+
+        <!-- Pulsante chiudi -->
+        <HBox spacing="10">
+            <children>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Button text="Chiudi" onAction="#onClose"/>
+            </children>
+        </HBox>
+
+    </children>
+</VBox>

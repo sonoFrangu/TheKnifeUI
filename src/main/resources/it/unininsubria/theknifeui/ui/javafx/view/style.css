@@ -1,0 +1,180 @@
+/* =========================
+   BASE APP
+   ========================= */
+.app-root {
+    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 16px;
+    -fx-background-color: #f2f4f6;
+}
+
+/* =========================
+   TOP BAR
+   ========================= */
+.top-bar {
+    -fx-padding: 10;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dfe3e6;
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: center;
+}
+
+.logo-label {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2933;
+}
+
+#roleLabel {
+    -fx-text-fill: #52616b;
+    -fx-font-size: 13px;
+}
+
+/* bottoni in alto */
+.button {
+    -fx-background-color: #2d6a4f;      /* verde */
+    -fx-text-fill: white;
+    -fx-background-radius: 6;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+}
+.button:hover {
+    -fx-background-color: #1e5a40;
+}
+#logoutBtn {
+    -fx-background-color: #e55353;
+}
+#logoutBtn:hover {
+    -fx-background-color: #c53a3a;
+}
+
+/* =========================
+   CONTENUTO
+   ========================= */
+.content-pane {
+    -fx-padding: 14;
+    -fx-background-color: transparent;
+}
+
+.section-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2933;
+    -fx-padding: 0 0 10 0;
+}
+
+/* =========================
+   LISTA
+   ========================= */
+.restaurant-list {
+    -fx-background-color: transparent;
+}
+
+.restaurant-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 6 4 6 4;
+}
+.restaurant-list .list-cell:filled:selected,
+.restaurant-list .list-cell:filled:selected:focused {
+    -fx-background-color: transparent;
+}
+
+/* =========================
+   CARD RISTORANTE
+   (create dal controller)
+   ========================= */
+.restaurant-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dfe3e6;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 10 14 10 14;
+    -fx-spacing: 4;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.03), 8, 0.1, 0, 2);
+    -fx-min-height: 88;
+}
+.restaurant-card-hover {
+    -fx-background-color: #f4faf7;
+    -fx-border-color: #2d6a4f;
+}
+
+/* titolo ristorante */
+.restaurant-name {
+    -fx-font-size: 21px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #0f172a;
+}
+
+/* indirizzi generici (sono Label normali dentro la VBox) */
+.restaurant-card .label {
+    -fx-text-fill: #5f6b7a;
+    -fx-font-size: 16px;
+}
+
+/* link */
+.restaurant-link {
+    -fx-text-fill: #1d72b8;
+    -fx-font-size: 16px;
+}
+.restaurant-link:hover {
+    -fx-underline: true;
+}
+
+/* awards / badge */
+.restaurant-awards {
+    -fx-text-fill: #c05621;
+    -fx-font-size: 16px;
+    -fx-font-weight: 600;
+}
+
+/* =========================
+   FOOTER
+   ========================= */
+.footer-bar {
+    -fx-padding: 6 12 6 12;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dfe3e6;
+    -fx-border-width: 1 0 0 0;
+    -fx-alignment: center-right;
+    -fx-spacing: 10;
+}
+
+.footer-text {
+    -fx-text-fill: #52616b;
+    -fx-font-size: 13px;
+}
+
+.footer-button {
+    -fx-background-color: #2d6a4f;
+    -fx-text-fill: white;
+    -fx-background-radius: 20;
+    -fx-padding: 4 14 4 14;
+    -fx-font-weight: 600;
+}
+.footer-button:hover {
+    -fx-background-color: #1e5a40;
+}
+
+/* niente azzurrino di default di JavaFX */
+.restaurant-list .list-cell:filled:selected,
+.restaurant-list .list-cell:filled:selected:focused {
+    -fx-background-color: transparent;
+}
+
+/* evidenzia la card selezionata */
+.restaurant-list .list-cell:filled:selected .restaurant-card,
+.restaurant-list .list-cell:filled:selected:focused .restaurant-card {
+    -fx-background-color: rgba(99, 151, 103, 0.3);    /* verde chiaro */
+    -fx-border-color: #2d6a4f;
+}
+
+/* il nome resta scuro anche da selezionato */
+.restaurant-list .list-cell:filled:selected .restaurant-name,
+.restaurant-list .list-cell:filled:selected:focused .restaurant-name {
+    -fx-text-fill: #0f172a;
+}
+
+/* anche le altre label restano leggibili */
+.restaurant-list .list-cell:filled:selected .label,
+.restaurant-list .list-cell:filled:selected:focused .label {
+    -fx-text-fill: #3b4a54;
+}
