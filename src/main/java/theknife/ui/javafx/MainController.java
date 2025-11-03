@@ -34,6 +34,7 @@ public class MainController {
     @FXML private CheckBox deliveryFilter;
     @FXML private CheckBox bookingFilter;
     @FXML private Button favoritesBtn;
+    @FXML private Button myReviewsBtn;
 
     private final ObservableList<Restaurant> restaurants = FXCollections.observableArrayList();
 
@@ -219,6 +220,10 @@ public class MainController {
             favoritesBtn.setVisible(false);
             favoritesBtn.setManaged(false);
         }
+        if (myReviewsBtn != null) {
+            myReviewsBtn.setVisible(false);
+            myReviewsBtn.setManaged(false);
+        }
     }
 
     @FXML
@@ -395,6 +400,23 @@ public class MainController {
         }
     }
 
+    @FXML
+    private void onShowMyReviews() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/it/unininsubria/theknifeui/ui/javafx/view/my_reviews.fxml"));
+
+            Scene scene = new Scene(loader.load());
+            Stage st = new Stage();
+            st.setScene(scene);
+            st.setTitle("Le mie recensioni");
+            st.initModality(Modality.APPLICATION_MODAL);
+            st.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private String clean(String s) {
         if (s == null) return "";
         return s.replace("\"", "").trim();
@@ -419,6 +441,10 @@ public class MainController {
         if (favoritesBtn != null) {
             favoritesBtn.setVisible(true);
             favoritesBtn.setManaged(true);
+        }
+        if (myReviewsBtn != null) {
+            myReviewsBtn.setVisible(true);
+            myReviewsBtn.setManaged(true);
         }
     }
 

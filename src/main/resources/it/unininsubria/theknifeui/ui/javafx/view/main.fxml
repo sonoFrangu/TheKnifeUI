@@ -23,6 +23,11 @@
                         visible="false"
                         managed="false"
                         onAction="#onShowFavorites"/>
+                <Button fx:id="myReviewsBtn"
+                        text="Le mie recensioni"
+                        visible="false"
+                        managed="false"
+                        onAction="#onShowMyReviews"/>
                 <Button fx:id="logoutBtn" text="Logout" onAction="#onLogout" visible="false"/>
             </children>
         </HBox>
