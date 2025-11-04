@@ -17,24 +17,30 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-
 import it.unininsubria.theknifeui.ui.javafx.Session;
 
 public class MainController {
 
     @FXML private ListView<Restaurant> restaurantList;
+
+    // top bar
     @FXML private Button loginBtn;
     @FXML private Button registerBtn;
     @FXML private Button logoutBtn;
+    @FXML private Label roleLabel;
+    @FXML private Button favoritesBtn;
+    @FXML private Button myReviewsBtn;
+    @FXML private Button myRestaurantsBtn; // se nel tuo FXML non c’è, puoi toglierlo
+
+    // azioni
     @FXML private Button addReviewBtn;
     @FXML private Button addRestaurantBtn;
-    @FXML private Label roleLabel;
+
+    // filtri
     @FXML private TextField searchField;
     @FXML private ComboBox<String> cuisineFilter;
     @FXML private CheckBox deliveryFilter;
     @FXML private CheckBox bookingFilter;
-    @FXML private Button favoritesBtn;
-    @FXML private Button myReviewsBtn;
 
     private final ObservableList<Restaurant> restaurants = FXCollections.observableArrayList();
 
@@ -42,12 +48,19 @@ public class MainController {
     private void initialize() {
         loadRestaurantsFromCsv();
         setupListView();
-        refreshUI();
-        cuisineFilter.setItems(FXCollections.observableArrayList(
-                "Tutte", "Italian", "Seafood", "Creative", "Japanese", "Other"
-        ));
-        cuisineFilter.getSelectionModel().selectFirst();
+        refreshUI(); // parte in guest
+
+        if (cuisineFilter != null) {
+            cuisineFilter.setItems(FXCollections.observableArrayList(
+                    "Tutte", "Italian", "Seafood", "Creative", "Japanese", "Other"
+            ));
+            cuisineFilter.getSelectionModel().selectFirst();
+        }
     }
+
+    /* =========================
+       CARICAMENTO CSV
+       ========================= */
 
     private void loadRestaurantsFromCsv() {
         try (InputStream is = getClass().getResourceAsStream("/michelin_my_maps.csv")) {
@@ -108,6 +121,7 @@ public class MainController {
             r.setAwards(clean(parts[10]));
         }
 
+        // se non c’è un link nel csv, generiamo il link maps
         if (fallbackLink != null && !fallbackLink.isBlank()) {
             r.setLink(fallbackLink);
         } else {
@@ -119,8 +133,15 @@ public class MainController {
         restaurants.add(r);
     }
 
+    /* =========================
+       LIST VIEW / CARD
+       ========================= */
+
     private void setupListView() {
         restaurantList.setItems(restaurants);
+        // per far funzionare il css .restaurant-list ...
+        restaurantList.getStyleClass().add("restaurant-list");
+
         restaurantList.setCellFactory(lv -> new ListCell<>() {
             private final Label nameLabel = new Label();
             private final Label addressLabel = new Label();
@@ -209,22 +230,70 @@ public class MainController {
         }
     }
 
+    /* =========================
+       UI / RUOLI
+       ========================= */
+
     private void refreshUI() {
-        if (loginBtn != null) loginBtn.setVisible(true);
-        if (registerBtn != null) registerBtn.setVisible(true);
-        if (logoutBtn != null) logoutBtn.setVisible(false);
-        if (roleLabel != null) roleLabel.setText("Ospite");
-        if (addReviewBtn != null) addReviewBtn.setDisable(true);
-        if (addRestaurantBtn != null) addRestaurantBtn.setDisable(true);
+        Session session = Session.getInstance();
+        Session.Role role = session.getRole();
+
+        boolean isGuest = (role == Session.Role.GUEST);
+        boolean isCliente = (role == Session.Role.CLIENTE);
+        boolean isRisto = (role == Session.Role.RISTORATORE);
+
+        // top bar
+        if (loginBtn != null) {
+            loginBtn.setVisible(isGuest);
+            loginBtn.setManaged(isGuest);
+        }
+        if (registerBtn != null) {
+            registerBtn.setVisible(isGuest);
+            registerBtn.setManaged(isGuest);
+        }
+        if (logoutBtn != null) {
+            logoutBtn.setVisible(!isGuest);
+            logoutBtn.setManaged(!isGuest);
+        }
+        if (roleLabel != null) {
+            if (isGuest) roleLabel.setText("Ospite");
+            else if (isCliente) roleLabel.setText("Cliente: " + nz(session.getUsername()));
+            else if (isRisto) roleLabel.setText("Ristoratore: " + nz(session.getUsername()));
+        }
+
+        // pulsanti cliente
         if (favoritesBtn != null) {
-            favoritesBtn.setVisible(false);
-            favoritesBtn.setManaged(false);
+            favoritesBtn.setVisible(isCliente);
+            favoritesBtn.setManaged(isCliente);
         }
         if (myReviewsBtn != null) {
-            myReviewsBtn.setVisible(false);
-            myReviewsBtn.setManaged(false);
+            myReviewsBtn.setVisible(isCliente);
+            myReviewsBtn.setManaged(isCliente);
+        }
+
+        // pulsanti ristoratore
+        if (myRestaurantsBtn != null) {
+            myRestaurantsBtn.setVisible(isRisto);
+            myRestaurantsBtn.setManaged(isRisto);
+        }
+
+        // azioni
+        if (addReviewBtn != null) {
+            addReviewBtn.setDisable(!isCliente);
+        }
+        if (addRestaurantBtn != null) {
+            addRestaurantBtn.setDisable(!isRisto);
         }
     }
+
+    // chiamato da login e da register
+    public void onLoginSuccess() {
+        refreshUI();
+    }
+
+    /* =========================
+       HANDLER TOP BAR
+       ========================= */
 
     @FXML
     private void onShowLogin() {
@@ -264,15 +333,9 @@ public class MainController {
         }
     }
 
-    // 👇 IMPLEMENTATO
     @FXML
     private void onLogout() {
-        // reset sessione se c'è
-        try {
-            Session.getInstance().logout();
-        } catch (Exception ignored) {}
-
-        // torna in modalità guest
+        Session.getInstance().logout();
         refreshUI();
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -282,8 +345,22 @@ public class MainController {
         alert.showAndWait();
     }
 
+    /* =========================
+       HANDLER AZIONI
+       ========================= */
+
     @FXML
     private void onAddRestaurant() {
+        Session s = Session.getInstance();
+        if (s.getRole() != Session.Role.RISTORATORE) {
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setTitle("Permesso negato");
+            a.setHeaderText(null);
+            a.setContentText("Solo i ristoratori possono aggiungere ristoranti.");
+            a.showAndWait();
+            return;
+        }
+
         try {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/it/unininsubria/theknifeui/ui/javafx/view/add_restaurant.fxml"));
@@ -291,6 +368,13 @@ public class MainController {
             st.setScene(new Scene(loader.load()));
             st.setTitle("Nuovo ristorante");
             st.initModality(Modality.APPLICATION_MODAL);
+
+            // se il controller ha setParent, glielo passiamo
+            try {
+                AddRestaurantController ctrl = loader.getController();
+                ctrl.setParent(this);
+            } catch (Exception ignored) {}
+
             st.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
@@ -299,7 +383,16 @@ public class MainController {
 
     @FXML
     private void onAddReview() {
-        // 1. prendi il ristorante selezionato
+        Session s = Session.getInstance();
+        if (s.getRole() != Session.Role.CLIENTE) {
+            Alert a = new Alert(Alert.AlertType.WARNING);
+            a.setTitle("Permesso negato");
+            a.setHeaderText(null);
+            a.setContentText("Solo i clienti possono inserire recensioni.");
+            a.showAndWait();
+            return;
+        }
+
         if (restaurantList == null) {
             System.err.println("restaurantList è null (controlla fx:id in main.fxml)");
             return;
@@ -323,32 +416,34 @@ public class MainController {
             st.setTitle("Nuova recensione");
             st.initModality(Modality.APPLICATION_MODAL);
 
-            // prendo il controller e gli passo proprio il ristorante
             AddReviewController ctrl = loader.getController();
-            ctrl.setRestaurant(selected);           // 👈 passiamo l’oggetto
-            ctrl.setRestaurantName(selected.getName()); // 👈 aggiorna il titolo
+            ctrl.setRestaurant(selected);
+            ctrl.setRestaurantName(selected.getName());
 
             st.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    /* =========================
+       ALTRE VIEW
+       ========================= */
+
     @FXML
     private void onApplyFilters() {
-        // TODO: qui puoi filtrare la ObservableList
         System.out.println("[FILTER] testo=" + searchField.getText()
-                + " cucina=" + cuisineFilter.getValue()
-                + " delivery=" + deliveryFilter.isSelected()
-                + " booking=" + bookingFilter.isSelected());
+                + " cucina=" + (cuisineFilter != null ? cuisineFilter.getValue() : "")
+                + " delivery=" + (deliveryFilter != null && deliveryFilter.isSelected())
+                + " booking=" + (bookingFilter != null && bookingFilter.isSelected()));
     }
 
     @FXML
     private void onResetFilters() {
-        searchField.clear();
-        cuisineFilter.getSelectionModel().selectFirst();
-        deliveryFilter.setSelected(false);
-        bookingFilter.setSelected(false);
-        // TODO: ricarica lista completa
+        if (searchField != null) searchField.clear();
+        if (cuisineFilter != null) cuisineFilter.getSelectionModel().selectFirst();
+        if (deliveryFilter != null) deliveryFilter.setSelected(false);
+        if (bookingFilter != null) bookingFilter.setSelected(false);
     }
 
     @FXML
@@ -392,7 +487,7 @@ public class MainController {
             st.initModality(Modality.APPLICATION_MODAL);
 
             AdvancedFilterController ctrl = loader.getController();
-            ctrl.setParent(this); // così dopo puoi applicare davvero i filtri
+            ctrl.setParent(this);
 
             st.showAndWait();
         } catch (IOException e) {
@@ -405,7 +500,6 @@ public class MainController {
         try {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/it/unininsubria/theknifeui/ui/javafx/view/my_reviews.fxml"));
-
             Scene scene = new Scene(loader.load());
             Stage st = new Stage();
             st.setScene(scene);
@@ -416,6 +510,10 @@ public class MainController {
             e.printStackTrace();
         }
     }
+
+    /* =========================
+       UTILS
+       ========================= */
 
     private String clean(String s) {
         if (s == null) return "";
@@ -430,25 +528,8 @@ public class MainController {
         return s == null ? "" : s.trim().replace(" ", "+");
     }
 
-    public void onLoginSuccess() {
-        if (loginBtn != null) loginBtn.setVisible(false);
-        if (registerBtn != null) loginBtn.setVisible(false);
-        if (registerBtn != null) registerBtn.setVisible(false);
-        if (logoutBtn != null) logoutBtn.setVisible(true);
-        if (roleLabel != null) roleLabel.setText("Utente autenticato");
-        if (addReviewBtn != null) addReviewBtn.setDisable(false);
-        if (addRestaurantBtn != null) addRestaurantBtn.setDisable(false);
-        if (favoritesBtn != null) {
-            favoritesBtn.setVisible(true);
-            favoritesBtn.setManaged(true);
-        }
-        if (myReviewsBtn != null) {
-            myReviewsBtn.setVisible(true);
-            myReviewsBtn.setManaged(true);
-        }
-    }
-
     private String[] splitCsv(String line) {
+        // split che gestisce anche i campi tra doppi apici
         return line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
     }
 }

@@ -6,7 +6,10 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import it.unininsubria.theknifeui.ui.javafx.Session;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -32,11 +35,11 @@ public class RegisterController {
 
     @FXML
     private void initialize() {
-        // metti i radio in un toggle group
+        // gruppo dei radio
         ToggleGroup tg = new ToggleGroup();
         clientRadio.setToggleGroup(tg);
         restaurantRadio.setToggleGroup(tg);
-        clientRadio.setSelected(true);
+        clientRadio.setSelected(true); // di default cliente
     }
 
     @FXML
@@ -48,18 +51,20 @@ public class RegisterController {
     private void onCreate(ActionEvent event) {
         String fname = firstNameField.getText();
         String lname = lastNameField.getText();
-        String user = usernameField.getText();
-        String pass = passwordField.getText();
-        String city = cityField.getText();
-        boolean isRestaurantOwner = restaurantRadio.isSelected();
+        String user  = usernameField.getText();
+        String pass  = passwordField.getText();
+        String city  = cityField.getText();
+        boolean isRestaurantOwner = restaurantRadio.isSelected(); // true = ristoratore
 
+        // validazione base
         if (user == null || user.isBlank() || pass == null || pass.isBlank()) {
             errorLabel.setText("Username e password sono obbligatori.");
             return;
         }
 
+        // scriviamo su users.csv
         try {
-            File f = new File("users.csv");
+            File f = new File(USERS_FILE);
             if (!f.exists()) {
                 f.createNewFile();
             }
@@ -67,9 +72,9 @@ public class RegisterController {
             String hashed = sha256(pass);
 
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(f, true))) {
-                // username;passwordHash;nome;cognome;città;isRestaurantOwner
-                bw.write(user + ";" + hashed + ";" +
-                        nz(fname) + ";" + nz(lname) + ";" + nz(city) + ";" + isRestaurantOwner);
+                // formato: username;passwordHash;nome;cognome;città;isRestaurantOwner
+                bw.write(user + ";" + hashed + ";"
+                        + nz(fname) + ";" + nz(lname) + ";" + nz(city) + ";" + isRestaurantOwner);
                 bw.newLine();
             }
         } catch (IOException e) {
@@ -78,7 +83,7 @@ public class RegisterController {
             return;
         }
 
-        // login automatico
+        // login automatico dopo registrazione
         Session session = Session.getInstance();
         session.setAuthenticated(true);
         session.setUsername(user);
@@ -88,6 +93,7 @@ public class RegisterController {
             session.setRole(Session.Role.CLIENTE);
         }
 
+        // avviso la main window così aggiorna i bottoni
         if (parentController != null) {
             parentController.onLoginSuccess();
         }
