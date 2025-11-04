@@ -99,9 +99,10 @@
 
 /* titolo ristorante */
 .restaurant-name {
-    -fx-font-size: 21px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #0f172a;
+    -fx-font-family: Arial;
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0b150c;
 }
 
 /* indirizzi generici (sono Label normali dentro la VBox) */
