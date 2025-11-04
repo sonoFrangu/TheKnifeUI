@@ -96,12 +96,7 @@ public class MainController {
         if (parts.length > 0) r.setName(clean(parts[0]));
         if (parts.length > 1) r.setAddress(clean(parts[1]));
         if (parts.length > 2) r.setCity(clean(parts[2]));
-        if (parts.length > 3) {
-            try {
-                double price = Double.parseDouble(clean(parts[3]).replace("€", "").replace(",", "."));
-                r.setAveragePrice(price);
-            } catch (NumberFormatException ignored) {}
-        }
+        if (parts.length > 3) r.setPrice(clean(parts[3]));
         if (parts.length > 4) r.setCuisineType(clean(parts[4]));
         if (parts.length > 5) {
             try { r.setLongitude(Double.parseDouble(clean(parts[5]))); } catch (NumberFormatException ignored) {}
@@ -200,12 +195,20 @@ public class MainController {
         });
     }
 
-    private void openRestaurantDetails(Restaurant rd) {
+private void openRestaurantDetails(Restaurant rd) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(
                     "/it/unininsubria/theknifeui/ui/javafx/view/restaurant_details.fxml"));
+            Scene scene = new Scene(loader.load());
+
+            // prova a caricare lo stylesheet SOLO se esiste
+            var cssUrl = getClass().getResource("/style.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            }
+
             Stage stage = new Stage();
-            stage.setScene(new Scene(loader.load()));
+            stage.setScene(scene);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setTitle(nz(rd.getName()));
 
@@ -217,7 +220,7 @@ public class MainController {
                     rd.getAddress(),
                     rd.getLatitude(),
                     rd.getLongitude(),
-                    rd.getAveragePrice(),
+                    rd.getPrice(),           // qui ora passi la stringa tipo €€€
                     rd.isDelivery(),
                     rd.isBooking(),
                     rd.getCuisineType(),

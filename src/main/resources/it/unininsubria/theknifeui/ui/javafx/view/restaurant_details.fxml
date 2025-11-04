@@ -5,42 +5,76 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
 
+<?import java.lang.String?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="theknife.ui.javafx.RestaurantDetailsController"
-      spacing="10"
-      styleClass="details-root">
-
+      stylesheets="@style.css"
+      styleClass="details-root"
+      spacing="12">
     <padding>
-        <Insets topRightBottomLeft="14"/>
+        <Insets top="16" right="16" bottom="16" left="16"/>
     </padding>
-
     <children>
-        <Button fx:id="favBtn" text="Aggiungi ai preferiti" onAction="#onAddToFavorites"/>
-        <!-- Intestazione -->
-        <Label fx:id="nameLabel" styleClass="details-title"/>
-        <Label fx:id="addressLabel" styleClass="details-line"/>
-        <Label fx:id="cityLabel" styleClass="details-line"/>
-        <Label fx:id="priceLabel" styleClass="details-line"/>
-        <Label fx:id="cuisineLabel" styleClass="details-line"/>
-        <Label fx:id="deliveryLabel" styleClass="details-line"/>
-        <Label fx:id="bookingLabel" styleClass="details-line"/>
 
-        <!-- Link cliccabile -->
-        <Hyperlink fx:id="websiteLink" text=""/>
+        <!-- HEADER -->
+        <HBox spacing="10" styleClass="details-header">
+            <children>
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                    <children>
+                        <!-- usa la classe che hai già nello style.css -->
+                        <Label fx:id="nameLabel" styleClass="restaurant-name"/>
+                        <Label fx:id="addressLabel" styleClass="details-line"/>
+                        <Label fx:id="cityLabel" styleClass="details-line"/>
+                    </children>
+                </VBox>
+                <Button fx:id="favBtn"
+                        text="Aggiungi ai preferiti"
+                        onAction="#onAddToFavorites"
+                        styleClass="details-fav-btn"/>
+            </children>
+        </HBox>
 
-        <Separator/>
+        <!-- INFO PANEL -->
+        <GridPane hgap="12" vgap="6" styleClass="details-info-panel">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="30"/>
+                <ColumnConstraints percentWidth="70"/>
+            </columnConstraints>
+            <children>
+                <Label text="Prezzo medio:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="details-label"/>
+                <Label fx:id="priceValue" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="details-value"/>
 
-        <!-- Mappa -->
-        <WebView fx:id="mapView" prefWidth="600.0" prefHeight="380.0" minWidth="600.0" minHeight="300.0"/>
+                <Label text="Cucina:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="details-label"/>
+                <Label fx:id="cuisineValue" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="details-value"/>
 
-        <!-- Pulsante chiudi -->
+                <Label text="Consegna:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="details-label"/>
+                <Label fx:id="deliveryValue" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="details-value"/>
+
+                <Label text="Prenotazione:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="details-label"/>
+                <Label fx:id="bookingValue" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="details-value"/>
+
+                <Label text="Sito web:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="details-label"/>
+                <Hyperlink fx:id="websiteLink" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="details-link"/>
+            </children>
+        </GridPane>
+
+        <Label text="Mappa o Sito web" styleClass="details-section-title"/>
+
+        <WebView fx:id="mapView"
+                 prefWidth="680.0"
+                 prefHeight="450.0"
+                 minHeight="280.0">
+            <styleClass>
+                <String fx:value="details-map"/>
+            </styleClass>
+        </WebView>
+
         <HBox spacing="10">
             <children>
                 <Pane HBox.hgrow="ALWAYS"/>
                 <Button text="Chiudi" onAction="#onClose"/>
             </children>
         </HBox>
-
     </children>
 </VBox>

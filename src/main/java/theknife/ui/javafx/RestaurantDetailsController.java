@@ -8,24 +8,27 @@ import javafx.scene.control.Label;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-
-import java.awt.Desktop;
-import java.io.IOException;
-import java.net.URI;
+import it.unininsubria.theknifeui.ui.javafx.Session;
 
 public class RestaurantDetailsController {
 
     @FXML private Label nameLabel;
     @FXML private Label addressLabel;
     @FXML private Label cityLabel;
-    @FXML private Label priceLabel;
-    @FXML private Label cuisineLabel;
-    @FXML private Label deliveryLabel;
-    @FXML private Label bookingLabel;
-    @FXML private Hyperlink websiteLink;
-    @FXML private WebView mapView;
 
-    private String externalUrl; // website o maps fallback
+    @FXML private Label priceValue;
+    @FXML private Label cuisineValue;
+    @FXML private Label deliveryValue;
+    @FXML private Label bookingValue;
+    @FXML private Hyperlink websiteLink;
+
+    @FXML private WebView mapView;
+    @FXML private Button favBtn;
+
+    private double lat;
+    private double lon;
+    private String website;
+    private String mapsUrl;
 
     public void setRestaurantData(String name,
                                   String nation,
@@ -33,91 +36,81 @@ public class RestaurantDetailsController {
                                   String address,
                                   double latitude,
                                   double longitude,
-                                  double price,
+                                  String price,
                                   boolean delivery,
                                   boolean booking,
                                   String cuisine,
                                   String website,
-                                  String mapsLink) {
+                                  String mapsUrl) {
 
-        nameLabel.setText(name);
-        addressLabel.setText("📍 " + (address == null ? "" : address) + (nation != null && !nation.isBlank() ? " (" + nation + ")" : ""));
-        cityLabel.setText("🏙️ " + (city == null ? "" : city));
-        priceLabel.setText("💶 Prezzo medio: " + (int) price + "€");
-        cuisineLabel.setText("🍽️ Cucina: " + (cuisine == null ? "-" : cuisine));
-        deliveryLabel.setText("🚚 Consegna: " + (delivery ? "Sì" : "No"));
-        bookingLabel.setText("📲 Prenotazione online: " + (booking ? "Disponibile" : "No"));
+        this.lat = latitude;
+        this.lon = longitude;
+        this.website = website;
+        this.mapsUrl = mapsUrl;
 
-        // Link cliccabile (website se valido, altrimenti maps)
-        externalUrl = (website != null && !website.isBlank()) ? website : mapsLink;
-        if (externalUrl != null && !externalUrl.isBlank()) {
-            websiteLink.setText(externalUrl);
-            websiteLink.setOnAction(e -> openExternal(externalUrl));
-            websiteLink.setVisible(true);
-            websiteLink.setManaged(true);
-        } else {
-            websiteLink.setVisible(false);
-            websiteLink.setManaged(false);
-        }
-
-        // MAPPA
-        if (!Double.isNaN(latitude) && !Double.isNaN(longitude) && (latitude != 0 || longitude != 0)) {
-            String html = buildLeafletMapHtml(latitude, longitude, name);
-            WebEngine engine = mapView.getEngine();
-            engine.setJavaScriptEnabled(true);
-            engine.loadContent(html);
-
-            mapView.setVisible(true);
-            mapView.setManaged(true);
-            mapView.setPrefWidth(600);
-            mapView.setPrefHeight(380);
-            mapView.setMinWidth(600);
-            mapView.setMinHeight(300);
-        } else {
-            mapView.setVisible(false);
-            mapView.setManaged(false);
-        }
-    }
-
-    private void openExternal(String url) {
-        if (url == null || url.isBlank()) return;
-        if (!url.startsWith("http")) {
-            url = "https://" + url;
-        }
-        final String finalUrl = url;
-        new Thread(() -> {
-            try {
-                Desktop.getDesktop().browse(URI.create(finalUrl));
-            } catch (IOException e) {
-                e.printStackTrace();
+        nameLabel.setText(nz(name));
+        addressLabel.setText(nz(address));
+        // city + nation
+        if (city != null && !city.isBlank()) {
+            if (nation != null && !nation.isBlank()) {
+                cityLabel.setText(city + ", " + nation);
+            } else {
+                cityLabel.setText(city);
             }
-        }).start();
+        } else {
+            cityLabel.setText(nz(nation));
+        }
+
+        // valori
+        if (price != null && !price.isBlank()) {
+            priceValue.setText(price);
+        } else {
+            priceValue.setText("-");
+        }
+
+        cuisineValue.setText(nz(cuisine));
+        deliveryValue.setText(delivery ? "Disponibile" : "No");
+        bookingValue.setText(booking ? "Disponibile" : "No");
+
+        if (website != null && !website.isBlank()) {
+            websiteLink.setText(website);
+            websiteLink.setOnAction(e -> openExternal(website));
+        } else {
+            websiteLink.setText("-");
+            websiteLink.setDisable(true);
+        }
+
+        loadMap();
+        refreshFavVisibility();
     }
 
+    private void loadMap() {
+        if (mapView == null) return;
+        WebEngine engine = mapView.getEngine();
+        if (lat != 0 && lon != 0) {
+            String url = "https://www.openstreetmap.org/?mlat=" + lat + "&mlon=" + lon + "#map=15/" + lat + "/" + lon;
+            engine.load(url);
+        } else if (mapsUrl != null) {
+            engine.load(mapsUrl);
+        }
+    }
 
-    private String buildLeafletMapHtml(double lat, double lon, String name) {
-        String safeName = (name == null || name.isBlank()) ? "Ristorante" : name.replace("'", "\\'");
-        return "<!DOCTYPE html>"
-                + "<html><head><meta charset='UTF-8' />"
-                + "<meta name='viewport' content='width=device-width, initial-scale=1.0' />"
-                // usiamo cdnjs invece di unpkg
-                + "<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css' />"
-                + "<style>html,body{height:100%;margin:0;}#map{width:100%;height:100%;}</style>"
-                + "</head><body>"
-                + "<div id='map'></div>"
-                + "<script src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js'></script>"
-                + "<script>"
-                + "var map = L.map('map',{zoomControl:false}).setView([" + lat + "," + lon + "], 17);"
-                + "L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {"
-                + "  maxZoom: 19,"
-                + "  tileSize: 256,"
-                + "  detectRetina: false,"
-                + "  zoomOffset: 0,"
-                + "  attribution: ''"
-                + "}).addTo(map);"
-                + "L.marker([" + lat + "," + lon + "]).addTo(map).bindPopup('" + safeName + "');"
-                + "</script>"
-                + "</body></html>";
+    private void refreshFavVisibility() {
+        Session s = Session.getInstance();
+        boolean isCliente = s.getRole() == Session.Role.CLIENTE;
+        if (favBtn != null) {
+            favBtn.setVisible(isCliente);
+            favBtn.setManaged(isCliente);
+        }
+    }
+
+    @FXML
+    private void onAddToFavorites() {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setTitle("Preferiti");
+        a.setHeaderText(null);
+        a.setContentText("Ristorante aggiunto ai preferiti (solo UI).");
+        a.showAndWait();
     }
 
     @FXML
@@ -125,14 +118,13 @@ public class RestaurantDetailsController {
         Stage st = (Stage) nameLabel.getScene().getWindow();
         st.close();
     }
-    @FXML private Button favBtn;
 
-    @FXML
-    private void onAddToFavorites() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Preferiti");
-        alert.setHeaderText(null);
-        alert.setContentText("Ristorante aggiunto ai preferiti (solo UI).");
-        alert.showAndWait();
+    private void openExternal(String url) {
+        // per ora lo lasciamo semplice
+        mapView.getEngine().load(url);
+    }
+
+    private String nz(String s) {
+        return s == null ? "" : s;
     }
 }
