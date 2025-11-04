@@ -40,31 +40,36 @@ public class RegisterController {
     }
 
     @FXML
+    private void onBack(ActionEvent event) {
+        close();
+    }
+
+    @FXML
     private void onCreate(ActionEvent event) {
         String fname = firstNameField.getText();
         String lname = lastNameField.getText();
         String user = usernameField.getText();
         String pass = passwordField.getText();
         String city = cityField.getText();
-        String role = clientRadio.isSelected() ? "CLIENTE" : "RISTORATORE";
+        boolean isRestaurantOwner = restaurantRadio.isSelected();
 
-        // validazione base
         if (user == null || user.isBlank() || pass == null || pass.isBlank()) {
             errorLabel.setText("Username e password sono obbligatori.");
             return;
         }
 
-        // crea file se non c'è
-        File f = new File(USERS_FILE);
         try {
+            File f = new File("users.csv");
             if (!f.exists()) {
                 f.createNewFile();
             }
+
+            String hashed = sha256(pass);
+
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(f, true))) {
-                String hashed = sha256(pass);
-                // formato: username;passwordHash;nome;cognome;città;ruolo
+                // username;passwordHash;nome;cognome;città;isRestaurantOwner
                 bw.write(user + ";" + hashed + ";" +
-                        nz(fname) + ";" + nz(lname) + ";" + nz(city) + ";" + role);
+                        nz(fname) + ";" + nz(lname) + ";" + nz(city) + ";" + isRestaurantOwner);
                 bw.newLine();
             }
         } catch (IOException e) {
@@ -73,27 +78,20 @@ public class RegisterController {
             return;
         }
 
-        // auto login
-        Session.getInstance().setAuthenticated(true);
-        Session.getInstance().setUsername(user);
-        // se hai l’enum dei ruoli:
-        if ("RISTORATORE".equals(role)) {
-            Session.getInstance().login(user, Session.Role.RISTORATORE);
+        // login automatico
+        Session session = Session.getInstance();
+        session.setAuthenticated(true);
+        session.setUsername(user);
+        if (isRestaurantOwner) {
+            session.setRole(Session.Role.RISTORATORE);
         } else {
-            Session.getInstance().login(user, Session.Role.CLIENTE);
+            session.setRole(Session.Role.CLIENTE);
         }
 
-        // avvisa la main window
         if (parentController != null) {
             parentController.onLoginSuccess();
         }
 
-        // chiudi
-        close();
-    }
-
-    @FXML
-    private void onBack(ActionEvent event) {
         close();
     }
 

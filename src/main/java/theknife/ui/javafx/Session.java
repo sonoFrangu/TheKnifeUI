@@ -26,7 +26,7 @@ public class Session {
 
     public void login(String username, Role role) {
         this.username = username;
-        this.role = role;
+        this.role = (role == null ? Role.GUEST : role);
     }
 
     public void logout() {
@@ -46,7 +46,6 @@ public class Session {
         if (!authenticated) {
             logout();
         } else {
-            // se non c'è un ruolo assegnato metti CLIENTE di default
             if (this.role == Role.GUEST) {
                 this.role = Role.CLIENTE;
             }
@@ -55,6 +54,11 @@ public class Session {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    // nuovo: permette di aggiornare solo il ruolo
+    public void setRole(Role role) {
+        this.role = (role == null ? Role.GUEST : role);
     }
 
     public String getUsername() {

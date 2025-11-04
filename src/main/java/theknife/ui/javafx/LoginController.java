@@ -47,16 +47,14 @@ public class LoginController {
             return;
         }
 
-        if (checkCredentials(user, pass)) {
-            // login riuscito
-            Session.getInstance().login(user, Session.Role.CLIENTE);
+        Session.Role role = checkCredentialsAndGetRole(user, pass);
+        if (role != null) {
+            // login riuscito con ruolo letto dal csv
+            Session.getInstance().login(user, role);
 
-            // avvisa la main window
             if (parentController != null) {
                 parentController.onLoginSuccess();
             }
-
-            // chiudi popup
             close();
         } else {
             errorLabel.setText("Credenziali non valide.");
@@ -65,7 +63,6 @@ public class LoginController {
 
     @FXML
     private void onGuest(ActionEvent event) {
-        // torna guest
         Session.getInstance().login(null, Session.Role.GUEST);
         if (parentController != null) {
             parentController.onLoginSuccess();
@@ -73,11 +70,15 @@ public class LoginController {
         close();
     }
 
-    private boolean checkCredentials(String username, String password) {
+    /**
+     * Legge il file users.csv con formato:
+     * username;passwordHash;nome;cognome;città;isRestaurantOwner
+     * e restituisce il ruolo corretto. Se non trova l'utente o la password non coincide, restituisce null.
+     */
+    private Session.Role checkCredentialsAndGetRole(String username, String password) {
         File f = new File(USERS_FILE);
         if (!f.exists()) {
-            // se non c'è ancora un file, permetti admin/1234
-            return "admin".equals(username) && "1234".equals(password);
+            return null;
         }
 
         String passwordHash = sha256(password);
@@ -85,11 +86,17 @@ public class LoginController {
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             String line;
             while ((line = br.readLine()) != null) {
-                // formato: username;passwordHash;city
                 String[] parts = line.split(";");
+                // username;passwordHash;nome;cognome;città;isRestaurantOwner
                 if (parts.length >= 2) {
-                    if (parts[0].equals(username) && parts[1].equals(passwordHash)) {
-                        return true;
+                    String fileUser = parts[0];
+                    String fileHash = parts[1];
+                    if (fileUser.equals(username) && fileHash.equals(passwordHash)) {
+                        boolean isRestaurantOwner = false;
+                        if (parts.length >= 6) {
+                            isRestaurantOwner = Boolean.parseBoolean(parts[5]);
+                        }
+                        return isRestaurantOwner ? Session.Role.RISTORATORE : Session.Role.CLIENTE;
                     }
                 }
             }
@@ -97,7 +104,7 @@ public class LoginController {
             e.printStackTrace();
         }
 
-        return false;
+        return null;
     }
 
     private String sha256(String input) {
