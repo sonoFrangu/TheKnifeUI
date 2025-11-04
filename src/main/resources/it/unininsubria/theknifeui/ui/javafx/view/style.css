@@ -31,11 +31,14 @@
 
 /* bottoni in alto */
 .button {
-    -fx-background-color: #2d6a4f;      /* verde */
-    -fx-text-fill: white;
-    -fx-background-radius: 6;
+    -fx-background-color: #2d6a4f;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 14;
+    -fx-padding: 6 16 6 16;
     -fx-font-weight: 600;
+    -fx-font-size: 14px;
     -fx-cursor: hand;
+    -fx-border-color: transparent;
 }
 .button:hover {
     -fx-background-color: #1e5a40;
@@ -146,10 +149,11 @@
 
 .footer-button {
     -fx-background-color: #2d6a4f;
-    -fx-text-fill: white;
-    -fx-background-radius: 20;
-    -fx-padding: 4 14 4 14;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 14;
+    -fx-padding: 6 16 6 16;
     -fx-font-weight: 600;
+    -fx-font-size: 14px;
 }
 .footer-button:hover {
     -fx-background-color: #1e5a40;
@@ -221,5 +225,21 @@
 }
 
 .details-fav-btn {
-    -fx-background-radius: 20;
+    -fx-background-color: #2d6a4f;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 14;
+    -fx-padding: 6 16 6 16;
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
+}
+.details-fav-btn:hover {
+    -fx-background-color: #1e5a40;
+}
+
+.details-map {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dfe3e6;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
 }
