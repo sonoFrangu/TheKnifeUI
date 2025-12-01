@@ -4,8 +4,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
-
 <?import java.lang.String?>
+
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="theknife.ui.javafx.RestaurantDetailsController"
@@ -14,27 +14,26 @@
       spacing="12">
     <padding>
         <Insets top="16" right="16" bottom="16" left="16"/>
-    </padding><!-- HEADER -->
+    </padding>
+
     <HBox spacing="10" styleClass="details-header">
         <VBox spacing="4" HBox.hgrow="ALWAYS">
-            <!-- usa la classe che hai già nello style.css -->
-            <Label fx:id="nameLabel" styleClass="restaurant-name"/>
+            <Label fx:id="etichettaNome" styleClass="restaurant-name"/>
             <HBox spacing="4">
                 <Label text="📍" styleClass="details-line"/>
-                <Label fx:id="addressLabel" styleClass="details-line"/>
+                <Label fx:id="etichettaIndirizzo" styleClass="details-line"/>
             </HBox>
             <HBox spacing="4">
                 <Label text="🏙️" styleClass="details-line"/>
-                <Label fx:id="cityLabel" styleClass="details-line"/>
+                <Label fx:id="etichettaCitta" styleClass="details-line"/>
             </HBox>
         </VBox>
-        <Button fx:id="favBtn"
+        <Button fx:id="bottonePreferiti"
                 text="Aggiungi ai preferiti"
-                onAction="#onAddToFavorites"
+                onAction="#onAggiungiAiPreferiti"
                 styleClass="details-fav-btn"/>
     </HBox>
 
-    <!-- INFO PANEL -->
     <GridPane hgap="12" vgap="6" styleClass="details-info-panel">
         <columnConstraints>
             <ColumnConstraints percentWidth="30"/>
@@ -42,25 +41,25 @@
         </columnConstraints>
         <children>
             <Label text="💰 Prezzo medio:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="details-label"/>
-            <Label fx:id="priceValue" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="details-value"/>
+            <Label fx:id="valorePrezzo" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="details-value"/>
 
             <Label text="🍽️ Cucina:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="details-label"/>
-            <Label fx:id="cuisineValue" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="details-value"/>
+            <Label fx:id="valoreCucina" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="details-value"/>
 
             <Label text="🚚 Consegna:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="details-label"/>
-            <Label fx:id="deliveryValue" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="details-value"/>
+            <Label fx:id="valoreConsegna" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="details-value"/>
 
             <Label text="📅 Prenotazione:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="details-label"/>
-            <Label fx:id="bookingValue" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="details-value"/>
+            <Label fx:id="valorePrenotazione" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="details-value"/>
 
             <Label text="🌐 Sito web:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="details-label"/>
-            <Hyperlink fx:id="websiteLink" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="details-link"/>
+            <Hyperlink fx:id="linkSitoWeb" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="details-link"/>
         </children>
     </GridPane>
 
     <Label text="Mappa o Sito web" styleClass="details-section-title"/>
 
-    <WebView fx:id="mapView"
+    <WebView fx:id="vistaMappa"
              prefWidth="680.0"
              prefHeight="450.0"
              minHeight="280.0">
@@ -71,6 +70,6 @@
 
     <HBox spacing="10">
         <Pane HBox.hgrow="ALWAYS"/>
-        <Button text="Chiudi" onAction="#onClose"/>
+        <Button text="Chiudi" onAction="#onChiudi"/>
     </HBox>
 </VBox>

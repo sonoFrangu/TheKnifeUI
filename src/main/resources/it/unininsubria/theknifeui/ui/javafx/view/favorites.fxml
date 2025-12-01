@@ -14,12 +14,12 @@
     </top>
 
     <center>
-        <ListView fx:id="favoritesList"
+        <ListView fx:id="listaPreferiti"
                   style="-fx-padding: 10;"/>
     </center>
 
     <bottom>
-        <Label fx:id="emptyLabel"
+        <Label fx:id="etichettaVuota"
                text="Non hai ancora aggiunto ristoranti ai preferiti."
                style="-fx-text-fill: #6b7280; -fx-padding: 5 10 10 10;"/>
     </bottom>

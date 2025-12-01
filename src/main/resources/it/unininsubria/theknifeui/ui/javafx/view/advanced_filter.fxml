@@ -13,41 +13,41 @@
 
             <Label text="Filtro avanzato" style="-fx-font-size: 18; -fx-font-weight: bold;"/>
 
-            <!-- Name -->
+            <!-- Nome -->
             <Label text="Nome ristorante"/>
-            <TextField fx:id="nameField" promptText="es. Da Vittorio"/>
+            <TextField fx:id="campoNome" promptText="es. Da Vittorio"/>
 
-            <!-- Address -->
+            <!-- Indirizzo -->
             <Label text="Indirizzo"/>
-            <TextField fx:id="addressField" promptText="via, piazza..."/>
+            <TextField fx:id="campoIndirizzo" promptText="via, piazza..."/>
 
-            <!-- City -->
+            <!-- Città -->
             <Label text="Città"/>
-            <TextField fx:id="cityField" promptText="Milano, Varese..."/>
+            <TextField fx:id="campoCitta" promptText="Milano, Varese..."/>
 
-            <!-- Nation -->
+            <!-- Nazione -->
             <Label text="Nazione"/>
-            <TextField fx:id="nationField" promptText="Italia, Francia..."/>
+            <TextField fx:id="campoNazione" promptText="Italia, Francia..."/>
 
-            <!-- Price -->
+            <!-- Prezzo -->
             <Label text="Prezzo massimo (€)"/>
-            <TextField fx:id="maxPriceField" promptText="es. 80"/>
+            <TextField fx:id="campoPrezzoMax" promptText="es. 80"/>
 
-            <!-- Cuisine -->
+            <!-- Tipo di cucina -->
             <Label text="Tipo di cucina"/>
-            <TextField fx:id="cuisineField" promptText="Italian, Seafood, Creative..."/>
+            <TextField fx:id="campoTipoCucina" promptText="Italian, Seafood, Creative..."/>
 
-            <!-- Facilities -->
+            <!-- Servizi -->
             <Label text="Servizi (testo contiene)"/>
-            <TextField fx:id="facilitiesField" promptText="es. Parking, Terrace"/>
+            <TextField fx:id="campoServizi" promptText="es. Parcheggio, Terrazza"/>
 
             <HBox spacing="10">
-                <CheckBox fx:id="deliveryCheck" text="Consegna"/>
-                <CheckBox fx:id="bookingCheck" text="Prenotazione online"/>
-                <CheckBox fx:id="greenStarCheck" text="Green Star"/>
+                <CheckBox fx:id="checkConsegna" text="Consegna"/>
+                <CheckBox fx:id="checkPrenotazione" text="Prenotazione online"/>
+                <CheckBox fx:id="checkStellaVerde" text="Green Star"/>
             </HBox>
 
-            <Label fx:id="errorLabel" textFill="red"/>
+            <Label fx:id="etichettaErrore" textFill="red"/>
 
             <HBox spacing="10">
                 <Button text="Applica" onAction="#onApply"/>

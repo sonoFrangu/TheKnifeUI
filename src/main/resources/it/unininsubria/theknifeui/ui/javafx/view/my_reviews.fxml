@@ -14,17 +14,17 @@
     </top>
 
     <center>
-        <TableView fx:id="reviewsTable">
+        <TableView fx:id="tabellaRecensioni">
             <columns>
-                <TableColumn fx:id="restaurantCol" text="Ristorante" prefWidth="180"/>
-                <TableColumn fx:id="ratingCol" text="Voto" prefWidth="80"/>
-                <TableColumn fx:id="textCol" text="Recensione" prefWidth="280"/>
+                <TableColumn fx:id="colonnaRistorante" text="Ristorante" prefWidth="180"/>
+                <TableColumn fx:id="colonnaVoto" text="Voto" prefWidth="80"/>
+                <TableColumn fx:id="colonnaTesto" text="Recensione" prefWidth="280"/>
             </columns>
         </TableView>
     </center>
 
     <bottom>
-        <Label fx:id="emptyLabel"
+        <Label fx:id="etichettaVuota"
                text="Non hai ancora scritto recensioni."
                style="-fx-text-fill: #6b7280; -fx-padding: 8 10 10 10;"/>
     </bottom>

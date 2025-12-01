@@ -2,9 +2,9 @@
 
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
-
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="theknife.ui.javafx.MainController"
@@ -26,20 +26,20 @@
                     <Label text="🍴 TheKnife" styleClass="logo-label"/>
                 </HBox>
                 <Pane HBox.hgrow="ALWAYS"/>
-                <Label fx:id="roleLabel"/>
-                <Button fx:id="loginBtn" text="Accedi" onAction="#onShowLogin"/>
-                <Button fx:id="registerBtn" text="Registrati" onAction="#onShowRegister"/>
-                <Button fx:id="favoritesBtn"
+                <Label fx:id="etichettaRuolo"/>
+                <Button fx:id="bottoneLogin" text="Accedi" onAction="#onShowLogin"/>
+                <Button fx:id="bottoneRegistrati" text="Registrati" onAction="#onShowRegister"/>
+                <Button fx:id="bottonePreferiti"
                         text="I miei preferiti"
                         visible="false"
                         managed="false"
                         onAction="#onShowFavorites"/>
-                <Button fx:id="myReviewsBtn"
+                <Button fx:id="bottoneMieRecensioni"
                         text="Le mie recensioni"
                         visible="false"
                         managed="false"
                         onAction="#onShowMyReviews"/>
-                <Button fx:id="logoutBtn" text="Logout" onAction="#onLogout" visible="false"/>
+                <Button fx:id="bottoneLogout" text="Logout" onAction="#onLogout" visible="false"/>
             </HBox>
         </VBox>
     </top>
@@ -54,18 +54,17 @@
                 <VBox spacing="10" style="-fx-padding: 10;">
                     <!-- BARRA FILTRI -->
                     <HBox spacing="10">
-                        <TextField fx:id="searchField" promptText="Cerca per nome o città..." />
-                        <ComboBox fx:id="cuisineFilter" promptText="Cucina" />
-                        <CheckBox fx:id="deliveryFilter" text="Delivery" />
-                        <CheckBox fx:id="bookingFilter" text="Prenotazione" />
+                        <TextField fx:id="campoRicerca" promptText="Cerca per nome o città..." />
+                        <ComboBox fx:id="filtroCucina" promptText="Cucina" />
+                        <CheckBox fx:id="filtroConsegna" text="Delivery" />
+                        <CheckBox fx:id="filtroPrenotazione" text="Prenotazione" />
                         <Button text="Filtra" onAction="#onApplyFilters"/>
                         <Button text="Reset" onAction="#onResetFilters"/>
                         <Button text="Filtro avanzato" onAction="#onShowAdvancedFilter"/>
-
                     </HBox>
 
                     <!-- LISTA RISTORANTI -->
-                    <ListView fx:id="restaurantList"
+                    <ListView fx:id="listaRistoranti"
                               styleClass="restaurant-list"
                               VBox.vgrow="ALWAYS"/>
                 </VBox>
@@ -79,8 +78,8 @@
             <children>
                 <Label text="TheKnife — lista ristoranti" styleClass="footer-text"/>
                 <Pane HBox.hgrow="ALWAYS"/>
-                <Button fx:id="addReviewBtn" text="Aggiungi recensione" onAction="#onAddReview" styleClass="footer-button"/>
-                <Button fx:id="addRestaurantBtn" text="Aggiungi ristorante" onAction="#onAddRestaurant" styleClass="footer-button"/>
+                <Button fx:id="bottoneAggiungiRecensione" text="Aggiungi recensione" onAction="#onAddReview" styleClass="footer-button"/>
+                <Button fx:id="bottoneAggiungiRistorante" text="Aggiungi ristorante" onAction="#onAddRestaurant" styleClass="footer-button"/>
             </children>
         </HBox>
     </bottom>
