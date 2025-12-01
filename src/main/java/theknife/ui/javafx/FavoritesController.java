@@ -10,30 +10,45 @@ import javafx.collections.ObservableList;
 
 public class FavoritesController {
 
-    @FXML private ListView<Restaurant> favoritesList;
-    @FXML private Label emptyLabel;
+    // Lista visibile con i ristoranti preferiti dell'utente
+    @FXML private ListView<Restaurant> listaPreferiti;
 
-    private final ObservableList<Restaurant> favorites = FXCollections.observableArrayList();
+    // Etichetta mostrata quando non ci sono elementi nella lista
+    @FXML private Label etichettaVuota;
 
+    // Lista interna dei preferiti collegata alla ListView
+    private final ObservableList<Restaurant> preferiti = FXCollections.observableArrayList();
+
+    /**
+     * Inizializzazione automatica chiamata da JavaFX.
+     * Collega la lista interna alla ListView e aggiorna la grafica.
+     */
     @FXML
     private void initialize() {
-        // per ora è vuoto: solo grafica
-        favoritesList.setItems(favorites);
-        refreshEmpty();
+        // per ora la lista è vuota → solo grafica
+        listaPreferiti.setItems(preferiti);
+        aggiornaMessaggioVuoto();
     }
 
-    // lo userai dopo dal MainController
-    public void addFavorite(Restaurant r) {
-        if (r == null) return;
-        if (!favorites.contains(r)) {
-            favorites.add(r);
-            refreshEmpty();
+    /**
+     * Aggiunge un ristorante ai preferiti.
+     * Ignora i duplicati.
+     */
+    public void addFavorite(Restaurant ristorante) {
+        if (ristorante == null) return;
+        if (!preferiti.contains(ristorante)) {
+            preferiti.add(ristorante);
+            aggiornaMessaggioVuoto();
         }
     }
 
-    private void refreshEmpty() {
-        boolean empty = favorites.isEmpty();
-        emptyLabel.setVisible(empty);
-        emptyLabel.setManaged(empty);
+    /**
+     * Mostra o nasconde il messaggio “Nessun preferito”
+     * in base allo stato della lista.
+     */
+    private void aggiornaMessaggioVuoto() {
+        boolean nessunElemento = preferiti.isEmpty();
+        etichettaVuota.setVisible(nessunElemento);
+        etichettaVuota.setManaged(nessunElemento);
     }
 }

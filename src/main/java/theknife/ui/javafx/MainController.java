@@ -17,44 +17,51 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-import it.unininsubria.theknifeui.ui.javafx.Session;
+// NIENTE import it.unininsubria...Session QUI
 
 public class MainController {
 
-    @FXML private ListView<Restaurant> restaurantList;
+    @FXML private ListView<Restaurant> listaRistoranti;
 
-    // top bar
-    @FXML private Button loginBtn;
-    @FXML private Button registerBtn;
-    @FXML private Button logoutBtn;
-    @FXML private Label roleLabel;
-    @FXML private Button favoritesBtn;
-    @FXML private Button myReviewsBtn;
-    @FXML private Button myRestaurantsBtn; // se nel tuo FXML non c’è, puoi toglierlo
+    // Barra in alto (top bar) con i pulsanti di login/registrazione ecc.
+    @FXML private Button bottoneLogin;
+    @FXML private Button bottoneRegistrati;
+    @FXML private Button bottoneLogout;
+    @FXML private Label etichettaRuolo;
+    @FXML private Button bottonePreferiti;
+    @FXML private Button bottoneMieRecensioni;
+    @FXML private Button bottoneMieiRistoranti; // se nel tuo FXML non c’è, puoi toglierlo
 
-    // azioni
-    @FXML private Button addReviewBtn;
-    @FXML private Button addRestaurantBtn;
+    // Pulsanti per le azioni principali
+    @FXML private Button bottoneAggiungiRecensione;
+    @FXML private Button bottoneAggiungiRistorante;
 
-    // filtri
-    @FXML private TextField searchField;
-    @FXML private ComboBox<String> cuisineFilter;
-    @FXML private CheckBox deliveryFilter;
-    @FXML private CheckBox bookingFilter;
+    // Campi per i filtri di ricerca
+    @FXML private TextField campoRicerca;
+    @FXML private ComboBox<String> filtroCucina;
+    @FXML private CheckBox filtroConsegna;
+    @FXML private CheckBox filtroPrenotazione;
 
-    private final ObservableList<Restaurant> restaurants = FXCollections.observableArrayList();
+    // Lista dei ristoranti usata dal codice (dati) collegata alla ListView
+    private final ObservableList<Restaurant> ristoranti = FXCollections.observableArrayList();
 
     @FXML
     private void initialize() {
-        loadRestaurantsFromCsv();
-        setupListView();
-        refreshUI(); // parte in guest
+        // Carica i ristoranti dal file CSV
+        caricaRistorantiDaCsv();
 
-        if (cuisineFilter != null) {
-            cuisineFilter.setItems(FXCollections.observableArrayList(
+        // Imposta come la lista deve mostrare ogni ristorante (card grafica)
+        inizializzaListaRistoranti();
+
+        // Imposta i pulsanti in base al ruolo (parte come "ospite")
+        aggiornaInterfaccia();
+
+        // Inizializza il filtro per tipo di cucina
+        if (filtroCucina != null) {
+            filtroCucina.setItems(FXCollections.observableArrayList(
                     "Tutte", "Italian", "Seafood", "Creative", "Japanese", "Other"
             ));
-            cuisineFilter.getSelectionModel().selectFirst();
+            filtroCucina.getSelectionModel().selectFirst();
         }
     }
 
@@ -62,23 +69,28 @@ public class MainController {
        CARICAMENTO CSV
        ========================= */
 
-    private void loadRestaurantsFromCsv() {
+    /**
+     * Legge il file CSV dalle risorse del progetto e aggiunge
+     * ogni riga come ristorante nella lista.
+     */
+    private void caricaRistorantiDaCsv() {
         try (InputStream is = getClass().getResourceAsStream("/michelin_my_maps.csv")) {
             if (is == null) {
                 System.err.println("/michelin_my_maps.csv non trovato in resources");
                 return;
             }
             try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                String line = br.readLine();
+                String linea = br.readLine();
 
-                // salta header
-                if (line != null && line.toLowerCase().contains("name")) {
-                    line = br.readLine();
+                // Salta la riga di intestazione se contiene "name"
+                if (linea != null && linea.toLowerCase().contains("name")) {
+                    linea = br.readLine();
                 }
 
-                while (line != null) {
-                    addFromCsvLine(line);
-                    line = br.readLine();
+                // Legge tutte le righe del file
+                while (linea != null) {
+                    aggiungiDaRigaCsv(linea);
+                    linea = br.readLine();
                 }
             }
         } catch (IOException e) {
@@ -86,70 +98,81 @@ public class MainController {
         }
     }
 
-    private void addFromCsvLine(String line) {
-        if (line == null || line.isBlank()) return;
+    /**
+     * Converte una singola riga CSV in un oggetto Restaurant
+     * e lo aggiunge alla lista dei ristoranti.
+     */
+    private void aggiungiDaRigaCsv(String linea) {
+        if (linea == null || linea.isBlank()) return;
 
-        String[] parts = splitCsv(line);
+        String[] parti = dividiCsv(linea);
 
         Restaurant r = new Restaurant();
 
-        if (parts.length > 0) r.setName(clean(parts[0]));
-        if (parts.length > 1) r.setAddress(clean(parts[1]));
-        if (parts.length > 2) r.setCity(clean(parts[2]));
-        if (parts.length > 3) r.setPrice(clean(parts[3]));
-        if (parts.length > 4) r.setCuisineType(clean(parts[4]));
-        if (parts.length > 5) {
-            try { r.setLongitude(Double.parseDouble(clean(parts[5]))); } catch (NumberFormatException ignored) {}
+        if (parti.length > 0) r.setNome(pulisci(parti[0]));
+        if (parti.length > 1) r.setIndirizzo(pulisci(parti[1]));
+        if (parti.length > 2) r.setCitta(pulisci(parti[2]));
+        if (parti.length > 3) r.setPrezzo(pulisci(parti[3]));
+        if (parti.length > 4) r.setTipoCucina(pulisci(parti[4]));
+
+        // Coordinate (attenzione agli errori di formato)
+        if (parti.length > 5) {
+            try { r.setLongitudine(Double.parseDouble(pulisci(parti[5]))); } catch (NumberFormatException ignored) {}
         }
-        if (parts.length > 6) {
-            try { r.setLatitude(Double.parseDouble(clean(parts[6]))); } catch (NumberFormatException ignored) {}
+        if (parti.length > 6) {
+            try { r.setLatitudine(Double.parseDouble(pulisci(parti[6]))); } catch (NumberFormatException ignored) {}
         }
 
-        String fallbackLink = null;
-        if (parts.length > 8) {
-            fallbackLink = clean(parts[8]);
+        // Link e info aggiuntive
+        String linkDiRipiego = null;
+        if (parti.length > 8) {
+            linkDiRipiego = pulisci(parti[8]);
         }
-        if (parts.length > 9) {
-            r.setWebsite(clean(parts[9]));
+        if (parti.length > 9) {
+            r.setWebsite(pulisci(parti[9]));
         }
-        if (parts.length > 10) {
-            r.setAwards(clean(parts[10]));
+        if (parti.length > 10) {
+            r.setAwards(pulisci(parti[10]));
         }
 
-        // se non c’è un link nel csv, generiamo il link maps
-        if (fallbackLink != null && !fallbackLink.isBlank()) {
-            r.setLink(fallbackLink);
+        // Se nel CSV non c’è un link, generiamo un link a Google Maps
+        if (linkDiRipiego != null && !linkDiRipiego.isBlank()) {
+            r.setLink(linkDiRipiego);
         } else {
             String maps = "https://www.google.com/maps?q="
-                    + url(r.getName()) + "+" + url(r.getAddress()) + "+" + url(r.getCity());
+                    + inUrl(r.getNome()) + "+" + inUrl(r.getIndirizzo()) + "+" + inUrl(r.getCitta());
             r.setLink(maps);
         }
 
-        restaurants.add(r);
+        ristoranti.add(r);
     }
 
     /* =========================
        LIST VIEW / CARD
        ========================= */
 
-    private void setupListView() {
-        restaurantList.setItems(restaurants);
-        // per far funzionare il css .restaurant-list ...
-        restaurantList.getStyleClass().add("restaurant-list");
+    /**
+     * Imposta come i ristoranti devono essere mostrati dentro la ListView:
+     * ogni riga ha nome, indirizzo, sito e tipo di cucina.
+     */
+    private void inizializzaListaRistoranti() {
+        listaRistoranti.setItems(ristoranti);
+        // Aggiunge una classe CSS per lo stile della lista
+        listaRistoranti.getStyleClass().add("restaurant-list");
 
-        restaurantList.setCellFactory(lv -> new ListCell<>() {
-            private final Label nameLabel = new Label();
-            private final Label addressLabel = new Label();
-            private final Hyperlink siteLabel = new Hyperlink();
-            private final Label awardsLabel = new Label();
+        listaRistoranti.setCellFactory(lv -> new ListCell<>() {
+            private final Label nomeEtichetta = new Label();
+            private final Label indirizzoEtichetta = new Label();
+            private final Hyperlink sitoEtichetta = new Hyperlink();
+            private final Label premiEtichetta = new Label();
             private final VBox box = new VBox(4);
 
             {
-                nameLabel.getStyleClass().add("restaurant-name");
-                siteLabel.getStyleClass().add("restaurant-link");
-                awardsLabel.getStyleClass().add("restaurant-awards");
+                nomeEtichetta.getStyleClass().add("restaurant-name");
+                sitoEtichetta.getStyleClass().add("restaurant-link");
+                premiEtichetta.getStyleClass().add("restaurant-awards");
                 box.getStyleClass().add("restaurant-card");
-                box.getChildren().addAll(nameLabel, addressLabel, siteLabel, awardsLabel);
+                box.getChildren().addAll(nomeEtichetta, indirizzoEtichetta, sitoEtichetta, premiEtichetta);
             }
 
             @Override
@@ -160,48 +183,57 @@ public class MainController {
                     return;
                 }
 
-                nameLabel.setText(nz(r.getName()));
-                addressLabel.setText(
-                        (nz(r.getAddress()) + ", " + nz(r.getCity()))
+                // Nome del ristorante
+                nomeEtichetta.setText(valoreNonNullo(r.getNome()));
+
+                // Indirizzo completo (indirizzo + città)
+                indirizzoEtichetta.setText(
+                        (valoreNonNullo(r.getIndirizzo()) + ", " + valoreNonNullo(r.getCitta()))
                                 .replaceAll(", $", "")
                 );
 
-                String website = r.getWebsite();
-                if (website != null && !website.isBlank()) {
-                    siteLabel.setText(website);
-                    siteLabel.setVisible(true);
-                    siteLabel.setManaged(true);
+                // Sito web (se presente lo mostriamo, altrimenti nascondiamo il link)
+                String sitoWeb = r.getWebsite();
+                if (sitoWeb != null && !sitoWeb.isBlank()) {
+                    sitoEtichetta.setText(sitoWeb);
+                    sitoEtichetta.setVisible(true);
+                    sitoEtichetta.setManaged(true);
                 } else {
-                    siteLabel.setVisible(false);
-                    siteLabel.setManaged(false);
+                    sitoEtichetta.setVisible(false);
+                    sitoEtichetta.setManaged(false);
                 }
 
-                String cuisine = r.getCuisineType();
-                if (cuisine != null && !cuisine.isBlank()) {
-                    awardsLabel.setText(cuisine);
-                    awardsLabel.setVisible(true);
-                    awardsLabel.setManaged(true);
+                // Per ora usiamo la label "premi" per mostrare il tipo di cucina
+                String cucina = r.getTipoCucina();
+                if (cucina != null && !cucina.isBlank()) {
+                    premiEtichetta.setText(cucina);
+                    premiEtichetta.setVisible(true);
+                    premiEtichetta.setManaged(true);
                 } else {
-                    awardsLabel.setVisible(false);
-                    awardsLabel.setManaged(false);
+                    premiEtichetta.setVisible(false);
+                    premiEtichetta.setManaged(false);
                 }
 
                 setGraphic(box);
 
+                // Doppio click su un ristorante = apri i dettagli in una nuova finestra
                 setOnMouseClicked(e -> {
-                    if (e.getClickCount() == 2) openRestaurantDetails(r);
+                    if (e.getClickCount() == 2) apriDettagliRistorante(r);
                 });
             }
         });
     }
 
-private void openRestaurantDetails(Restaurant rd) {
+    /**
+     * Apre una nuova finestra con i dettagli del ristorante selezionato.
+     */
+    private void apriDettagliRistorante(Restaurant rd) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(
                     "/it/unininsubria/theknifeui/ui/javafx/view/restaurant_details.fxml"));
             Scene scene = new Scene(loader.load());
 
-            // prova a caricare lo stylesheet SOLO se esiste
+            // Carica lo stylesheet se esiste
             var cssUrl = getClass().getResource("/style.css");
             if (cssUrl != null) {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
@@ -210,20 +242,20 @@ private void openRestaurantDetails(Restaurant rd) {
             Stage stage = new Stage();
             stage.setScene(scene);
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setTitle(nz(rd.getName()));
+            stage.setTitle(valoreNonNullo(rd.getNome()));
 
             RestaurantDetailsController ctrl = loader.getController();
             ctrl.setRestaurantData(
-                    rd.getName(),
-                    rd.getNation(),
-                    rd.getCity(),
-                    rd.getAddress(),
-                    rd.getLatitude(),
-                    rd.getLongitude(),
-                    rd.getPrice(),           // qui ora passi la stringa tipo €€€
+                    rd.getNome(),
+                    rd.getNazione(),
+                    rd.getCitta(),
+                    rd.getIndirizzo(),
+                    rd.getLatitudine(),
+                    rd.getLongitudine(),
+                    rd.getPrezzo(),           // qui ora passi la stringa tipo €€€
                     rd.isDelivery(),
                     rd.isBooking(),
-                    rd.getCuisineType(),
+                    rd.getTipoCucina(),
                     rd.getWebsite(),
                     rd.getLink()
             );
@@ -237,61 +269,69 @@ private void openRestaurantDetails(Restaurant rd) {
        UI / RUOLI
        ========================= */
 
-    private void refreshUI() {
-        Session session = Session.getInstance();
-        Session.Role role = session.getRole();
+    /**
+     * Aggiorna la visibilità dei pulsanti in base al ruolo dell’utente:
+     * - ospite
+     * - cliente
+     * - ristoratore
+     */
+    private void aggiornaInterfaccia() {
+        Session sessione = Session.getInstance();
+        Session.Role ruolo = sessione.getRole();
 
-        boolean isGuest = (role == Session.Role.GUEST);
-        boolean isCliente = (role == Session.Role.CLIENTE);
-        boolean isRisto = (role == Session.Role.RISTORATORE);
+        boolean isOspite = (ruolo == Session.Role.GUEST);
+        boolean isCliente = (ruolo == Session.Role.CLIENTE);
+        boolean isRisto   = (ruolo == Session.Role.RISTORATORE);
 
-        // top bar
-        if (loginBtn != null) {
-            loginBtn.setVisible(isGuest);
-            loginBtn.setManaged(isGuest);
+        // Pulsanti login/registrazione/logout
+        if (bottoneLogin != null) {
+            bottoneLogin.setVisible(isOspite);
+            bottoneLogin.setManaged(isOspite);
         }
-        if (registerBtn != null) {
-            registerBtn.setVisible(isGuest);
-            registerBtn.setManaged(isGuest);
+        if (bottoneRegistrati != null) {
+            bottoneRegistrati.setVisible(isOspite);
+            bottoneRegistrati.setManaged(isOspite);
         }
-        if (logoutBtn != null) {
-            logoutBtn.setVisible(!isGuest);
-            logoutBtn.setManaged(!isGuest);
-        }
-        if (roleLabel != null) {
-            if (isGuest) roleLabel.setText("Ospite");
-            else if (isCliente) roleLabel.setText("Cliente: " + nz(session.getUsername()));
-            else if (isRisto) roleLabel.setText("Ristoratore: " + nz(session.getUsername()));
-        }
-
-        // pulsanti cliente
-        if (favoritesBtn != null) {
-            favoritesBtn.setVisible(isCliente);
-            favoritesBtn.setManaged(isCliente);
-        }
-        if (myReviewsBtn != null) {
-            myReviewsBtn.setVisible(isCliente);
-            myReviewsBtn.setManaged(isCliente);
+        if (bottoneLogout != null) {
+            bottoneLogout.setVisible(!isOspite);
+            bottoneLogout.setManaged(!isOspite);
         }
 
-        // pulsanti ristoratore
-        if (myRestaurantsBtn != null) {
-            myRestaurantsBtn.setVisible(isRisto);
-            myRestaurantsBtn.setManaged(isRisto);
+        // Etichetta con ruolo/username
+        if (etichettaRuolo != null) {
+            if (isOspite) etichettaRuolo.setText("Ospite");
+            else if (isCliente) etichettaRuolo.setText("Cliente: " + valoreNonNullo(sessione.getUsername()));
+            else if (isRisto) etichettaRuolo.setText("Ristoratore: " + valoreNonNullo(sessione.getUsername()));
         }
 
-        // azioni
-        if (addReviewBtn != null) {
-            addReviewBtn.setDisable(!isCliente);
+        // Pulsanti specifici del cliente
+        if (bottonePreferiti != null) {
+            bottonePreferiti.setVisible(isCliente);
+            bottonePreferiti.setManaged(isCliente);
         }
-        if (addRestaurantBtn != null) {
-            addRestaurantBtn.setDisable(!isRisto);
+        if (bottoneMieRecensioni != null) {
+            bottoneMieRecensioni.setVisible(isCliente);
+            bottoneMieRecensioni.setManaged(isCliente);
+        }
+
+        // Pulsante "i miei ristoranti" solo per ristoratori
+        if (bottoneMieiRistoranti != null) {
+            bottoneMieiRistoranti.setVisible(isRisto);
+            bottoneMieiRistoranti.setManaged(isRisto);
+        }
+
+        // Azioni abilitate/disabilitate
+        if (bottoneAggiungiRecensione != null) {
+            bottoneAggiungiRecensione.setDisable(!isCliente);
+        }
+        if (bottoneAggiungiRistorante != null) {
+            bottoneAggiungiRistorante.setDisable(!isRisto);
         }
     }
 
     // chiamato da login e da register
     public void onLoginSuccess() {
-        refreshUI();
+        aggiornaInterfaccia();
     }
 
     /* =========================
@@ -339,7 +379,7 @@ private void openRestaurantDetails(Restaurant rd) {
     @FXML
     private void onLogout() {
         Session.getInstance().logout();
-        refreshUI();
+        aggiornaInterfaccia();
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Logout");
@@ -375,7 +415,7 @@ private void openRestaurantDetails(Restaurant rd) {
             // se il controller ha setParent, glielo passiamo
             try {
                 AddRestaurantController ctrl = loader.getController();
-                ctrl.setParent(this);
+                ctrl.setControllerPrincipale(this);
             } catch (Exception ignored) {}
 
             st.showAndWait();
@@ -396,13 +436,13 @@ private void openRestaurantDetails(Restaurant rd) {
             return;
         }
 
-        if (restaurantList == null) {
-            System.err.println("restaurantList è null (controlla fx:id in main.fxml)");
+        if (listaRistoranti == null) {
+            System.err.println("listaRistoranti è null (controlla fx:id in main.fxml)");
             return;
         }
 
-        Restaurant selected = restaurantList.getSelectionModel().getSelectedItem();
-        if (selected == null) {
+        Restaurant selezionato = listaRistoranti.getSelectionModel().getSelectedItem();
+        if (selezionato == null) {
             Alert a = new Alert(Alert.AlertType.WARNING);
             a.setTitle("Nessun ristorante");
             a.setHeaderText(null);
@@ -420,8 +460,8 @@ private void openRestaurantDetails(Restaurant rd) {
             st.initModality(Modality.APPLICATION_MODAL);
 
             AddReviewController ctrl = loader.getController();
-            ctrl.setRestaurant(selected);
-            ctrl.setRestaurantName(selected.getName());
+            ctrl.setRestaurant(selezionato);
+            ctrl.setRestaurantName(selezionato.getNome());
 
             st.showAndWait();
         } catch (IOException e) {
@@ -435,18 +475,18 @@ private void openRestaurantDetails(Restaurant rd) {
 
     @FXML
     private void onApplyFilters() {
-        System.out.println("[FILTER] testo=" + searchField.getText()
-                + " cucina=" + (cuisineFilter != null ? cuisineFilter.getValue() : "")
-                + " delivery=" + (deliveryFilter != null && deliveryFilter.isSelected())
-                + " booking=" + (bookingFilter != null && bookingFilter.isSelected()));
+        System.out.println("[FILTER] testo=" + (campoRicerca != null ? campoRicerca.getText() : "")
+                + " cucina=" + (filtroCucina != null ? filtroCucina.getValue() : "")
+                + " delivery=" + (filtroConsegna != null && filtroConsegna.isSelected())
+                + " booking=" + (filtroPrenotazione != null && filtroPrenotazione.isSelected()));
     }
 
     @FXML
     private void onResetFilters() {
-        if (searchField != null) searchField.clear();
-        if (cuisineFilter != null) cuisineFilter.getSelectionModel().selectFirst();
-        if (deliveryFilter != null) deliveryFilter.setSelected(false);
-        if (bookingFilter != null) bookingFilter.setSelected(false);
+        if (campoRicerca != null) campoRicerca.clear();
+        if (filtroCucina != null) filtroCucina.getSelectionModel().selectFirst();
+        if (filtroConsegna != null) filtroConsegna.setSelected(false);
+        if (filtroPrenotazione != null) filtroPrenotazione.setSelected(false);
     }
 
     @FXML
@@ -518,20 +558,33 @@ private void openRestaurantDetails(Restaurant rd) {
        UTILS
        ========================= */
 
-    private String clean(String s) {
+    /**
+     * Rimuove eventuali doppi apici e spazi inutili.
+     */
+    private String pulisci(String s) {
         if (s == null) return "";
         return s.replace("\"", "").trim();
     }
 
-    private String nz(String s) {
+    /**
+     * Restituisce la stringa se non è null, altrimenti stringa vuota.
+     * Utile per evitare NullPointerException nelle concatenazioni.
+     */
+    private String valoreNonNullo(String s) {
         return s == null ? "" : s;
     }
 
-    private String url(String s) {
+    /**
+     * Converte uno spazio in '+' per poter usare la stringa in una URL.
+     */
+    private String inUrl(String s) {
         return s == null ? "" : s.trim().replace(" ", "+");
     }
 
-    private String[] splitCsv(String line) {
+    /**
+     * Divide una riga CSV in campi, gestendo i campi tra doppi apici.
+     */
+    private String[] dividiCsv(String line) {
         // split che gestisce anche i campi tra doppi apici
         return line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
     }

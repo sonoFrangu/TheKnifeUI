@@ -11,45 +11,74 @@ import javafx.scene.control.cell.PropertyValueFactory;
 // modello fittizio solo per la view
 public class MyReviewsController {
 
-    @FXML private TableView<ReviewRow> reviewsTable;
-    @FXML private TableColumn<ReviewRow, String> restaurantCol;
-    @FXML private TableColumn<ReviewRow, Integer> ratingCol;
-    @FXML private TableColumn<ReviewRow, String> textCol;
-    @FXML private Label emptyLabel;
+    // Tabella che mostra le recensioni dell’utente
+    @FXML private TableView<ReviewRow> tabellaRecensioni;
 
-    private final ObservableList<ReviewRow> data = FXCollections.observableArrayList();
+    // Colonna con il nome del ristorante
+    @FXML private TableColumn<ReviewRow, String> colonnaRistorante;
 
+    // Colonna con il voto
+    @FXML private TableColumn<ReviewRow, Integer> colonnaVoto;
+
+    // Colonna con il testo della recensione
+    @FXML private TableColumn<ReviewRow, String> colonnaTesto;
+
+    // Etichetta mostrata quando la tabella è vuota
+    @FXML private Label etichettaVuota;
+
+    // Dati fittizi (in futuro verranno riempiti dal MainController)
+    private final ObservableList<ReviewRow> dati = FXCollections.observableArrayList();
+
+    /**
+     * Inizializzazione chiamata automaticamente da JavaFX.
+     * Configura le colonne e collega la lista dei dati alla tabella.
+     */
     @FXML
     private void initialize() {
-        restaurantCol.setCellValueFactory(new PropertyValueFactory<>("restaurant"));
-        ratingCol.setCellValueFactory(new PropertyValueFactory<>("rating"));
-        textCol.setCellValueFactory(new PropertyValueFactory<>("text"));
+        // Associa i getter alle colonne
+        colonnaRistorante.setCellValueFactory(new PropertyValueFactory<>("restaurant"));
+        colonnaVoto.setCellValueFactory(new PropertyValueFactory<>("rating"));
+        colonnaTesto.setCellValueFactory(new PropertyValueFactory<>("text"));
 
-        reviewsTable.setItems(data);
+        // Collega la tabella alla lista dati
+        tabellaRecensioni.setItems(dati);
 
-        // per ora è vuoto: solo grafica
-        refreshEmpty();
+        // Per ora non ci sono recensioni → solo grafica
+        aggiornaMessaggioVuoto();
     }
 
+    /**
+     * Chiamato quando l’utente preme il pulsante "Modifica".
+     * Per ora è solo una funzione di debug grafico.
+     */
     @FXML
     private void onEdit() {
-        // solo grafica
         System.out.println("[MY-REVIEWS] modifica recensione...");
     }
 
+    /**
+     * Chiamato quando l’utente preme il pulsante "Elimina".
+     * Per ora è solo grafica.
+     */
     @FXML
     private void onDelete() {
-        // solo grafica
         System.out.println("[MY-REVIEWS] elimina recensione...");
     }
 
-    private void refreshEmpty() {
-        boolean isEmpty = data.isEmpty();
-        emptyLabel.setVisible(isEmpty);
-        emptyLabel.setManaged(isEmpty);
+    /**
+     * Mostra o nasconde il messaggio "Nessuna recensione"
+     * in base al contenuto della tabella.
+     */
+    private void aggiornaMessaggioVuoto() {
+        boolean vuota = dati.isEmpty();
+        etichettaVuota.setVisible(vuota);
+        etichettaVuota.setManaged(vuota);
     }
 
-    // classe interna fittizia
+    /**
+     * Classe interna usata come modello per la tabella.
+     * Un oggetto rappresenta una riga della tabella.
+     */
     public static class ReviewRow {
         private final String restaurant;
         private final int rating;

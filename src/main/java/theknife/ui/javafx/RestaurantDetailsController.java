@@ -8,28 +8,35 @@ import javafx.scene.control.Label;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-import it.unininsubria.theknifeui.ui.javafx.Session;
 
 public class RestaurantDetailsController {
 
-    @FXML private Label nameLabel;
-    @FXML private Label addressLabel;
-    @FXML private Label cityLabel;
+    // Etichette principali con i dati del ristorante
+    @FXML private Label etichettaNome;
+    @FXML private Label etichettaIndirizzo;
+    @FXML private Label etichettaCitta;
 
-    @FXML private Label priceValue;
-    @FXML private Label cuisineValue;
-    @FXML private Label deliveryValue;
-    @FXML private Label bookingValue;
-    @FXML private Hyperlink websiteLink;
+    // Valori di dettaglio (prezzo, cucina, servizi)
+    @FXML private Label valorePrezzo;
+    @FXML private Label valoreCucina;
+    @FXML private Label valoreConsegna;
+    @FXML private Label valorePrenotazione;
+    @FXML private Hyperlink linkSitoWeb;
 
-    @FXML private WebView mapView;
-    @FXML private Button favBtn;
+    // Mappa incorporata e pulsante preferiti
+    @FXML private WebView vistaMappa;
+    @FXML private Button bottonePreferiti;
 
-    private double lat;
-    private double lon;
-    private String website;
-    private String mapsUrl;
+    // Dati interni per la mappa e il sito
+    private double latitudine;
+    private double longitudine;
+    private String sitoWeb;
+    private String urlMaps;
 
+    /**
+     * Imposta i dati del ristorante da mostrare nella view.
+     * Questo metodo viene chiamato dal MainController.
+     */
     public void setRestaurantData(String name,
                                   String nation,
                                   String city,
@@ -43,69 +50,86 @@ public class RestaurantDetailsController {
                                   String website,
                                   String mapsUrl) {
 
-        this.lat = latitude;
-        this.lon = longitude;
-        this.website = website;
-        this.mapsUrl = mapsUrl;
+        this.latitudine = latitude;
+        this.longitudine = longitude;
+        this.sitoWeb = website;
+        this.urlMaps = mapsUrl;
 
-        nameLabel.setText(nz(name));
-        addressLabel.setText(nz(address));
-        // city + nation
+        etichettaNome.setText(valoreNonNullo(name));
+        etichettaIndirizzo.setText(valoreNonNullo(address));
+
+        // città + nazione
         if (city != null && !city.isBlank()) {
             if (nation != null && !nation.isBlank()) {
-                cityLabel.setText(city + ", " + nation);
+                etichettaCitta.setText(city + ", " + nation);
             } else {
-                cityLabel.setText(city);
+                etichettaCitta.setText(city);
             }
         } else {
-            cityLabel.setText(nz(nation));
+            etichettaCitta.setText(valoreNonNullo(nation));
         }
 
-        // valori
+        // prezzo
         if (price != null && !price.isBlank()) {
-            priceValue.setText(price);
+            valorePrezzo.setText(price);
         } else {
-            priceValue.setText("-");
+            valorePrezzo.setText("-");
         }
 
-        cuisineValue.setText(nz(cuisine));
-        deliveryValue.setText(delivery ? "Disponibile" : "No");
-        bookingValue.setText(booking ? "Disponibile" : "No");
+        // tipo di cucina e servizi
+        valoreCucina.setText(valoreNonNullo(cuisine));
+        valoreConsegna.setText(delivery ? "Disponibile" : "No");
+        valorePrenotazione.setText(booking ? "Disponibile" : "No");
 
+        // link al sito web
         if (website != null && !website.isBlank()) {
-            websiteLink.setText(website);
-            websiteLink.setOnAction(e -> openExternal(website));
+            linkSitoWeb.setText(website);
+            linkSitoWeb.setOnAction(e -> apriEsterno(website));
         } else {
-            websiteLink.setText("-");
-            websiteLink.setDisable(true);
+            linkSitoWeb.setText("-");
+            linkSitoWeb.setDisable(true);
         }
 
-        loadMap();
-        refreshFavVisibility();
+        caricaMappa();
+        aggiornaVisibilitaPreferiti();
     }
 
-    private void loadMap() {
-        if (mapView == null) return;
-        WebEngine engine = mapView.getEngine();
-        if (lat != 0 && lon != 0) {
-            String url = "https://www.openstreetmap.org/?mlat=" + lat + "&mlon=" + lon + "#map=15/" + lat + "/" + lon;
+    /**
+     * Carica la mappa nella WebView usando OpenStreetMap se sono presenti
+     * latitudine/longitudine, altrimenti usa l’eventuale URL di Maps.
+     */
+    private void caricaMappa() {
+        if (vistaMappa == null) return;
+        WebEngine engine = vistaMappa.getEngine();
+
+        if (latitudine != 0 && longitudine != 0) {
+            String url = "https://www.openstreetmap.org/?mlat=" + latitudine
+                    + "&mlon=" + longitudine
+                    + "#map=15/" + latitudine + "/" + longitudine;
             engine.load(url);
-        } else if (mapsUrl != null) {
-            engine.load(mapsUrl);
+        } else if (urlMaps != null) {
+            engine.load(urlMaps);
         }
     }
 
-    private void refreshFavVisibility() {
+    /**
+     * Mostra il pulsante "Aggiungi ai preferiti" solo se l’utente è un CLIENTE.
+     */
+    private void aggiornaVisibilitaPreferiti() {
         Session s = Session.getInstance();
         boolean isCliente = s.getRole() == Session.Role.CLIENTE;
-        if (favBtn != null) {
-            favBtn.setVisible(isCliente);
-            favBtn.setManaged(isCliente);
+        if (bottonePreferiti != null) {
+            bottonePreferiti.setVisible(isCliente);
+            bottonePreferiti.setManaged(isCliente);
         }
     }
 
+    /**
+     * Handler del pulsante "Aggiungi ai preferiti".
+     * Per ora è solo UI (non salva davvero).
+     */
     @FXML
-    private void onAddToFavorites() {
+    private void onAggiungiAiPreferiti() {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
         a.setTitle("Preferiti");
         a.setHeaderText(null);
@@ -113,18 +137,30 @@ public class RestaurantDetailsController {
         a.showAndWait();
     }
 
+    /**
+     * Handler del pulsante "Chiudi".
+     * Chiude la finestra dei dettagli.
+     */
     @FXML
-    private void onClose() {
-        Stage st = (Stage) nameLabel.getScene().getWindow();
+    private void onChiudi() {
+        Stage st = (Stage) etichettaNome.getScene().getWindow();
         st.close();
     }
 
-    private void openExternal(String url) {
-        // per ora lo lasciamo semplice
-        mapView.getEngine().load(url);
+    /**
+     * Apre un URL esterno all’interno della stessa WebView.
+     * Per ora viene usato per il sito del ristorante.
+     */
+    private void apriEsterno(String url) {
+        if (vistaMappa != null) {
+            vistaMappa.getEngine().load(url);
+        }
     }
 
-    private String nz(String s) {
+    /**
+     * Restituisce stringa vuota se il valore è null, altrimenti la stringa originale.
+     */
+    private String valoreNonNullo(String s) {
         return s == null ? "" : s;
     }
 }

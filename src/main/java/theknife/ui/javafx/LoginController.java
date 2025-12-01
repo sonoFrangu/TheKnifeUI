@@ -1,126 +1,171 @@
 package theknife.ui.javafx;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.event.ActionEvent;
 import javafx.stage.Stage;
-import it.unininsubria.theknifeui.ui.javafx.Session;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Controller della finestra di login.
+ * Gestisce l'accesso dell'utente come cliente, ristoratore o ospite.
+ */
 public class LoginController {
 
-    @FXML private TextField usernameField;
-    @FXML private PasswordField passwordField;
-    @FXML private Label errorLabel;
+    // Campo di testo per lo username
+    @FXML private TextField campoUsername;
 
-    private MainController parentController;
+    // Campo di testo per la password (nascosta)
+    @FXML private PasswordField campoPassword;
 
-    // nome del file “locale”
-    private static final String USERS_FILE = "users.csv";
-    // fallback: quello dentro le risorse
-    private static final String USERS_CLASSPATH = "/users.csv";
+    // Etichetta per mostrare eventuali messaggi di errore
+    @FXML private Label etichettaErrore;
 
+    // Riferimento al controller principale (finestra principale)
+    private MainController controllerPrincipale;
+
+    // Nome del file CSV che contiene gli utenti registrati
+    private static final String FILE_UTENTI = "users.csv";
+
+    /**
+     * Imposta il controller principale che ha aperto la finestra di login.
+     */
     public void setParentController(MainController parentController) {
-        this.parentController = parentController;
-    }
-
-    @FXML
-    private void onLogin(ActionEvent event) {
-        String user = usernameField.getText();
-        String pass = passwordField.getText();
-
-        if (user == null || user.isBlank() || pass == null || pass.isBlank()) {
-            errorLabel.setText("Compila username e password.");
-            return;
-        }
-
-        Session.Role role = checkCredentialsAndGetRole(user, pass);
-        if (role != null) {
-            Session.getInstance().login(user, role);
-            if (parentController != null) {
-                parentController.onLoginSuccess();
-            }
-            close();
-        } else {
-            errorLabel.setText("Credenziali non valide.");
-        }
-    }
-
-    @FXML
-    private void onGuest(ActionEvent event) {
-        Session.getInstance().login(null, Session.Role.GUEST);
-        if (parentController != null) {
-            parentController.onLoginSuccess();
-        }
-        close();
+        this.controllerPrincipale = parentController;
     }
 
     /**
-     * 1) prova a leggere users.csv nella cartella corrente
-     * 2) se non c'è, prova dalle risorse
+     * Handler del pulsante "Login".
+     * Controlla che i campi non siano vuoti, verifica le credenziali
+     * e in caso di successo aggiorna la Session.
      */
-    private Session.Role checkCredentialsAndGetRole(String username, String password) {
-        BufferedReader br = null;
+    @FXML
+    private void onLogin(ActionEvent event) {
+        String nomeUtente = campoUsername.getText();
+        String password   = campoPassword.getText();
+
+        // Controllo base: username e password non possono essere vuoti
+        if (nomeUtente == null || nomeUtente.isBlank()
+                || password == null || password.isBlank()) {
+            etichettaErrore.setText("Compila username e password.");
+            return;
+        }
+
+        // Verifica nel file utenti e ottiene il ruolo associato
+        Session.Role ruolo = verificaCredenzialiERuolo(nomeUtente, password);
+        if (ruolo != null) {
+            // Login riuscito: aggiorniamo la sessione
+            Session.getInstance().login(nomeUtente, ruolo);
+
+            // Avvisiamo la finestra principale che il login è andato a buon fine
+            if (controllerPrincipale != null) {
+                controllerPrincipale.onLoginSuccess();
+            }
+            chiudiFinestra();
+        } else {
+            // Credenziali errate
+            etichettaErrore.setText("Credenziali non valide.");
+        }
+    }
+
+    /**
+     * Handler del pulsante "Entra come ospite".
+     * Non richiede credenziali e imposta il ruolo GUEST.
+     */
+    @FXML
+    private void onGuest(ActionEvent event) {
+        Session.getInstance().login(null, Session.Role.GUEST);
+        if (controllerPrincipale != null) {
+            controllerPrincipale.onLoginSuccess();
+        }
+        chiudiFinestra();
+    }
+
+    /**
+     * Verifica le credenziali nel file degli utenti e restituisce il ruolo
+     * se l'username e la password coincidono, altrimenti restituisce null.
+     *
+     * Formato di ogni riga del file:
+     *   username;password_hash;nome;cognome;città;isRestaurantOwner
+     */
+    private Session.Role verificaCredenzialiERuolo(String nomeUtente, String password) {
+        BufferedReader lettore = null;
         try {
-            File f = new File(USERS_FILE);
-            if (f.exists()) {
-                br = new BufferedReader(new FileReader(f, StandardCharsets.UTF_8));
+            File fileUtentiLocale = new File(FILE_UTENTI);
+            if (fileUtentiLocale.exists()) {
+                // Usa il file users.csv nella cartella corrente
+                lettore = new BufferedReader(new FileReader(fileUtentiLocale, StandardCharsets.UTF_8));
             } else {
-                // fallback su resources
-                InputStream is = getClass().getResourceAsStream(USERS_CLASSPATH);
+                // Altrimenti prova a caricarlo dalle risorse del jar
+                InputStream is = getClass().getResourceAsStream("/users.csv");
                 if (is == null) {
                     System.err.println("users.csv non trovato né in disco né nel classpath");
                     return null;
                 }
-                br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+                lettore = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
             }
 
-            String passwordHash = sha256(password);
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(";");
-                if (parts.length >= 2) {
-                    String fileUser = parts[0];
-                    String fileHash = parts[1];
-                    if (fileUser.equals(username) && fileHash.equals(passwordHash)) {
-                        boolean isRestaurantOwner = false;
-                        if (parts.length >= 6) {
-                            isRestaurantOwner = Boolean.parseBoolean(parts[5]);
+            // Calcola l'hash della password inserita
+            String hashPassword = calcolaSha256(password);
+
+            String linea;
+            while ((linea = lettore.readLine()) != null) {
+                String[] parti = linea.split(";");
+                if (parti.length >= 2) {
+                    String utenteDaFile = parti[0];
+                    String hashDaFile   = parti[1];
+
+                    // Controllo se username e password (hash) coincidono
+                    if (utenteDaFile.equals(nomeUtente) && hashDaFile.equals(hashPassword)) {
+                        boolean isRistoratore = false;
+                        // Se esiste il sesto campo, indica se è ristoratore
+                        if (parti.length >= 6) {
+                            isRistoratore = Boolean.parseBoolean(parti[5]);
                         }
-                        return isRestaurantOwner ? Session.Role.RISTORATORE : Session.Role.CLIENTE;
+                        return isRistoratore ? Session.Role.RISTORATORE : Session.Role.CLIENTE;
                     }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (br != null) try { br.close(); } catch (IOException ignored) {}
+            if (lettore != null) {
+                try { lettore.close(); } catch (IOException ignored) {}
+            }
         }
         return null;
     }
 
-    private String sha256(String input) {
+    /**
+     * Calcola l'hash SHA-256 del testo passato e lo restituisce in formato esadecimale.
+     * Viene usato per confrontare le password in modo sicuro.
+     */
+    private String calcolaSha256(String testo) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(input.getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hash) {
-                sb.append(String.format("%02x", b));
+            byte[] digest = md.digest(testo.getBytes(StandardCharsets.UTF_8));
+            StringBuilder builder = new StringBuilder();
+            for (byte b : digest) {
+                builder.append(String.format("%02x", b));
             }
-            return sb.toString();
+            return builder.toString();
         } catch (NoSuchAlgorithmException e) {
+            // SHA-256 dovrebbe sempre essere disponibile nella JVM
             throw new RuntimeException(e);
         }
     }
 
-    private void close() {
-        Stage stage = (Stage) usernameField.getScene().getWindow();
+    /**
+     * Chiude la finestra di login.
+     */
+    private void chiudiFinestra() {
+        Stage stage = (Stage) campoUsername.getScene().getWindow();
         stage.close();
     }
 }

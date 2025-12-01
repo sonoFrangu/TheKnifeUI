@@ -1,16 +1,16 @@
 package theknife.model;
 
 public class Restaurant {
-    private String name;
-    private String city;
-    private String address;
-    private String price;
+    private String nome;
+    private String citta;
+    private String indirizzo;
+    private String Prezzo;
     private boolean delivery;
     private boolean booking;
-    private String cuisineType;
-    private String nation;
-    private double latitude;
-    private double longitude;
+    private String tipoCucina;
+    private String nazione;
+    private double latitudine;
+    private double longitudine;
     private String website;
     private String link;
     private String awards;
@@ -18,47 +18,47 @@ public class Restaurant {
     public Restaurant() {
     }
 
-    public Restaurant(String name, String nation, String city, String address,
-                      double latitude, double longitude, String price,
-                      boolean delivery, boolean booking, String cuisineType) {
-        this.name = name;
-        this.nation = nation;
-        this.city = city;
-        this.address = address;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.price = price;
+    public Restaurant(String nome, String Nazione, String citta, String indirizzo,
+                      double Latitudine, double longitudine, String Prezzo,
+                      boolean delivery, boolean booking, String tipoCucina) {
+        this.nome = nome;
+        this.nazione = Nazione;
+        this.citta = citta;
+        this.indirizzo = indirizzo;
+        this.latitudine = Latitudine;
+        this.longitudine = longitudine;
+        this.Prezzo = Prezzo;
         this.delivery = delivery;
         this.booking = booking;
-        this.cuisineType = cuisineType;
+        this.tipoCucina = tipoCucina;
     }
 
     // getter
-    public String getName() { return name; }
-    public String getCity() { return city; }
-    public String getAddress() { return address; }
-    public String getPrice() { return price; }
+    public String getNome() { return nome; }
+    public String getCitta() { return citta; }
+    public String getIndirizzo() { return indirizzo; }
+    public String getPrezzo() { return Prezzo; }
     public boolean isDelivery() { return delivery; }
     public boolean isBooking() { return booking; }
-    public String getCuisineType() { return cuisineType; }
-    public String getNation() { return nation; }
-    public double getLatitude() { return latitude; }
-    public double getLongitude() { return longitude; }
+    public String getTipoCucina() { return tipoCucina; }
+    public String getNazione() { return nazione; }
+    public double getLatitudine() { return latitudine; }
+    public double getLongitudine() { return longitudine; }
     public String getWebsite() { return website; }
     public String getLink() { return link; }
     public String getAwards() { return awards; }
 
     // setter
-    public void setName(String name) { this.name = name; }
-    public void setCity(String city) { this.city = city; }
-    public void setAddress(String address) { this.address = address; }
-    public void setPrice(String price) { this.price = price; }
+    public void setNome(String nome) { this.nome = nome; }
+    public void setCitta(String citta) { this.citta = citta; }
+    public void setIndirizzo(String indirizzo) { this.indirizzo = indirizzo; }
+    public void setPrezzo(String prezzo) { this.Prezzo = prezzo; }
     public void setDelivery(boolean delivery) { this.delivery = delivery; }
     public void setBooking(boolean booking) { this.booking = booking; }
-    public void setCuisineType(String cuisineType) { this.cuisineType = cuisineType; }
-    public void setNation(String nation) { this.nation = nation; }
-    public void setLatitude(double latitude) { this.latitude = latitude; }
-    public void setLongitude(double longitude) { this.longitude = longitude; }
+    public void setTipoCucina(String tipoCucina) { this.tipoCucina = tipoCucina; }
+    public void setNazione(String nazione) { this.nazione = nazione; }
+    public void setLatitudine(double latitudine) { this.latitudine = latitudine; }
+    public void setLongitudine(double longitudine) { this.longitudine = longitudine; }
     public void setWebsite(String website) { this.website = website; }
     public void setLink(String link) { this.link = link; }
     public void setAwards(String awards) { this.awards = awards; }

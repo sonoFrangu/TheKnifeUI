@@ -6,50 +6,69 @@ import javafx.stage.Stage;
 
 public class AdvancedFilterController {
 
-    @FXML private TextField nameField;
-    @FXML private TextField addressField;
-    @FXML private TextField cityField;
-    @FXML private TextField nationField;
-    @FXML private TextField maxPriceField;
-    @FXML private TextField cuisineField;
-    @FXML private TextField facilitiesField;
-    @FXML private CheckBox deliveryCheck;
-    @FXML private CheckBox bookingCheck;
-    @FXML private CheckBox greenStarCheck;
-    @FXML private Label errorLabel;
+    // Campi testuali per inserire i dettagli del filtro avanzato
+    @FXML private TextField campoNome;
+    @FXML private TextField campoIndirizzo;
+    @FXML private TextField campoCitta;
+    @FXML private TextField campoNazione;
+    @FXML private TextField campoPrezzoMax;
+    @FXML private TextField campoTipoCucina;
+    @FXML private TextField campoServizi;
 
-    // in futuro qui puoi passare il MainController per applicare davvero i filtri
-    private MainController parent;
+    // Filtri booleani
+    @FXML private CheckBox checkConsegna;
+    @FXML private CheckBox checkPrenotazione;
+    @FXML private CheckBox checkStellaVerde; // Michelin Green Star
 
+    // Etichetta per mostrare errori o avvisi all’utente
+    @FXML private Label etichettaErrore;
+
+    // Riferimento al MainController per applicare i filtri alla lista principale
+    private MainController controllerPrincipale;
+
+    /**
+     * Imposta il controller principale della finestra principale.
+     * Permetterà di passare i parametri del filtro.
+     */
     public void setParent(MainController parent) {
-        this.parent = parent;
+        this.controllerPrincipale = parent;
     }
 
+    /**
+     * Chiamato quando l’utente clicca su “Applica”.
+     * Per ora stampa solo i valori inseriti per verifica grafica.
+     */
     @FXML
     private void onApply() {
-        // per ora solo debug grafico
-        System.out.println("[ADV-FILTER] name=" + nameField.getText()
-                + " city=" + cityField.getText()
-                + " nation=" + nationField.getText()
-                + " maxPrice=" + maxPriceField.getText()
-                + " cuisine=" + cuisineField.getText()
-                + " facilities=" + facilitiesField.getText()
-                + " delivery=" + deliveryCheck.isSelected()
-                + " booking=" + bookingCheck.isSelected()
-                + " greenStar=" + greenStarCheck.isSelected());
+        System.out.println("[ADV-FILTER] nome=" + campoNome.getText()
+                + " | città=" + campoCitta.getText()
+                + " | nazione=" + campoNazione.getText()
+                + " | prezzoMax=" + campoPrezzoMax.getText()
+                + " | cucina=" + campoTipoCucina.getText()
+                + " | servizi=" + campoServizi.getText()
+                + " | consegna=" + checkConsegna.isSelected()
+                + " | prenotazione=" + checkPrenotazione.isSelected()
+                + " | stellaVerde=" + checkStellaVerde.isSelected());
 
-        // TODO: chiamare un metodo del parent con questi parametri
+        // TODO: in futuro qui potrai passare una struttura dati al MainController
 
-        close();
+        chiudiFinestra();
     }
 
+    /**
+     * Chiamato quando l’utente clicca su “Annulla”.
+     * Non applica nulla, chiude solo la finestra.
+     */
     @FXML
     private void onCancel() {
-        close();
+        chiudiFinestra();
     }
 
-    private void close() {
-        Stage st = (Stage) nameField.getScene().getWindow();
-        st.close();
+    /**
+     * Chiude la finestra corrente.
+     */
+    private void chiudiFinestra() {
+        Stage finestra = (Stage) campoNome.getScene().getWindow();
+        finestra.close();
     }
 }

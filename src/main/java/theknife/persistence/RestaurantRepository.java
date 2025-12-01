@@ -6,54 +6,78 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Questa classe si occupa di leggere i dati dei ristoranti da un file CSV
+ * e convertirli in oggetti Ristorante.
+ */
 public class RestaurantRepository {
 
-    public static List<Restaurant> loadFromCsv(String path) {
-        List<Restaurant> restaurants = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-            String line;
-            br.readLine(); // skip header
-            while ((line = br.readLine()) != null) {
-                // Use comma or semicolon delimiter depending on the file
-                String[] p = line.split("[;,]");
-                if (p.length < 10) continue;
+    /**
+     * Carica i ristoranti da un file CSV.
+     * Ogni riga del file rappresenta un ristorante.
+     *
+     * @param percorso Percorso del file CSV
+     * @return Lista di oggetti Ristorante
+     */
+    public static List<Restaurant> caricaDaCsv(String percorso) {
+        List<Restaurant> ristoranti = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(percorso))) {
+
+            String linea;
+
+            br.readLine(); // Salta l'intestazione del CSV (header)
+
+            while ((linea = br.readLine()) != null) {
+
+                // Divide la riga usando sia la virgola che il punto e virgola
+                String[] campi = linea.split("[;,]");
+
+                // Controllo minimo per evitare errori
+                if (campi.length < 10) continue;
 
                 Restaurant r = new Restaurant();
-                r.setName(p[0].trim());
-                r.setAddress(p[1].trim());
-                r.setCity(p[2].trim());
 
-                // Price column is symbolic (€, €€, etc.)
-                r.setPrice(p[3].trim());
+                // Informazioni principali
+                r.setNome(campi[0].trim());
+                r.setIndirizzo(campi[1].trim());
+                r.setCitta(campi[2].trim());
+                r.setPrezzo(campi[3].trim()); // Es. €, €€, €€€
 
-                // Coordinates
+                // Coordinate geografiche
                 try {
-                    r.setLongitude(Double.parseDouble(p[4].trim()));
-                    r.setLatitude(Double.parseDouble(p[5].trim()));
+                    r.setLongitudine(Double.parseDouble(campi[4].trim()));
+                    r.setLatitudine(Double.parseDouble(campi[5].trim()));
                 } catch (NumberFormatException e) {
-                    r.setLongitude(0);
-                    r.setLatitude(0);
+                    // In caso di errore, mettiamo coordinate 0,0
+                    r.setLongitudine(0);
+                    r.setLatitudine(0);
                 }
 
-                // Booleans or other flags
+                // Colonne booleane: consegna e prenotazione
                 boolean delivery = false;
                 boolean booking = false;
                 try {
-                    delivery = Boolean.parseBoolean(p[6].trim());
-                    booking = Boolean.parseBoolean(p[7].trim());
+                    delivery = Boolean.parseBoolean(campi[6].trim());
+                    booking = Boolean.parseBoolean(campi[7].trim());
                 } catch (Exception ignored) {}
+
                 r.setDelivery(delivery);
                 r.setBooking(booking);
 
-                // Cuisine and website
-                if (p.length > 8) r.setCuisineType(p[8].trim());
-                if (p.length > 9) r.setWebsite(p[9].trim());
+                // Tipo di cucina e sito web
+                if (campi.length > 8) r.setTipoCucina(campi[8].trim());
+                if (campi.length > 9) r.setWebsite(campi[9].trim());
 
-                restaurants.add(r);
+                ristoranti.add(r);
             }
+
         } catch (Exception e) {
+            // In caso di errore file non trovato o lettura fallita
+            System.err.println("Errore durante la lettura del file CSV:");
             e.printStackTrace();
         }
-        return restaurants;
+
+        return ristoranti;
     }
 }
