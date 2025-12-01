@@ -5,9 +5,11 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
-import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+
+import java.awt.Desktop;
+import java.net.URI;
 
 public class RestaurantDetailsController {
 
@@ -21,22 +23,24 @@ public class RestaurantDetailsController {
     @FXML private Label valoreCucina;
     @FXML private Label valoreConsegna;
     @FXML private Label valorePrenotazione;
+
+    // Link al sito
     @FXML private Hyperlink linkSitoWeb;
 
-    // Mappa incorporata e pulsante preferiti
-    @FXML private WebView vistaMappa;
+    // WebView dove visualizzare il sito del ristorante
+    @FXML private WebView vistaMappa; // usata come "mini browser" per il sito
+
+    // Pulsanti in alto a destra
+    @FXML private Button bottoneApriMaps;
     @FXML private Button bottonePreferiti;
 
-    // Dati interni per la mappa e il sito
+    // Dati interni per mappa e sito
     private double latitudine;
     private double longitudine;
     private String sitoWeb;
-    private String urlMaps;
+    private String urlMaps;        // dal CSV (Michelin)
+    private String googleMapsUrl;  // usato dal bottone "Apri in Maps"
 
-    /**
-     * Imposta i dati del ristorante da mostrare nella view.
-     * Questo metodo viene chiamato dal MainController.
-     */
     public void setRestaurantData(String name,
                                   String nation,
                                   String city,
@@ -53,7 +57,7 @@ public class RestaurantDetailsController {
         this.latitudine = latitude;
         this.longitudine = longitude;
         this.sitoWeb = website;
-        this.urlMaps = mapsUrl;
+        this.urlMaps = mapsUrl; // lo teniamo, ma non lo usiamo direttamente per Maps
 
         etichettaNome.setText(valoreNonNullo(name));
         etichettaIndirizzo.setText(valoreNonNullo(address));
@@ -81,40 +85,67 @@ public class RestaurantDetailsController {
         valoreConsegna.setText(delivery ? "Disponibile" : "No");
         valorePrenotazione.setText(booking ? "Disponibile" : "No");
 
-        // link al sito web
+        // sito web → caricato nella WebView
         if (website != null && !website.isBlank()) {
             linkSitoWeb.setText(website);
-            linkSitoWeb.setOnAction(e -> apriEsterno(website));
+            linkSitoWeb.setDisable(false);
+            linkSitoWeb.setOnAction(e -> apriInWebView(website));
+            apriInWebView(website); // carica subito
         } else {
             linkSitoWeb.setText("-");
             linkSitoWeb.setDisable(true);
+            mostraMessaggioNessunSito();
         }
 
-        caricaMappa();
+        // prepara l'URL da aprire col bottone "Apri in Maps"
+        preparaGoogleMapsUrl();
+
         aggiornaVisibilitaPreferiti();
     }
 
     /**
-     * Carica la mappa nella WebView usando OpenStreetMap se sono presenti
-     * latitudine/longitudine, altrimenti usa l’eventuale URL di Maps.
+     * Prepara la URL per Google Maps (solo Google, niente Michelin).
      */
-    private void caricaMappa() {
-        if (vistaMappa == null) return;
-        WebEngine engine = vistaMappa.getEngine();
+    private void preparaGoogleMapsUrl() {
+        String urlFinale = null;
 
         if (latitudine != 0 && longitudine != 0) {
-            String url = "https://www.openstreetmap.org/?mlat=" + latitudine
-                    + "&mlon=" + longitudine
-                    + "#map=15/" + latitudine + "/" + longitudine;
-            engine.load(url);
-        } else if (urlMaps != null) {
-            engine.load(urlMaps);
+            // usa solo le coordinate
+            urlFinale = "https://www.google.com/maps?q=" + latitudine + "," + longitudine;
+        } else {
+            // fallback: usa nome + indirizzo + città
+            String query = (valoreNonNullo(etichettaNome.getText()) + " "
+                    + valoreNonNullo(etichettaIndirizzo.getText()) + " "
+                    + valoreNonNullo(etichettaCitta.getText())).trim();
+            if (!query.isBlank()) {
+                String encoded = query.replace(" ", "+");
+                urlFinale = "https://www.google.com/maps/search/?api=1&query=" + encoded;
+            }
+        }
+
+        this.googleMapsUrl = urlFinale;
+
+        if (bottoneApriMaps != null) {
+            boolean disponibile = (googleMapsUrl != null);
+            bottoneApriMaps.setDisable(!disponibile);
+            if (!disponibile) {
+                bottoneApriMaps.setText("Maps non disponibile");
+            } else {
+                bottoneApriMaps.setText("Apri in Maps");
+            }
         }
     }
 
     /**
-     * Mostra il pulsante "Aggiungi ai preferiti" solo se l’utente è un CLIENTE.
+     * Chiamato dal bottone in FXML.
      */
+    @FXML
+    private void onApriMaps() {
+        if (googleMapsUrl != null) {
+            apriNelBrowser(googleMapsUrl);
+        }
+    }
+
     private void aggiornaVisibilitaPreferiti() {
         Session s = Session.getInstance();
         boolean isCliente = s.getRole() == Session.Role.CLIENTE;
@@ -124,10 +155,6 @@ public class RestaurantDetailsController {
         }
     }
 
-    /**
-     * Handler del pulsante "Aggiungi ai preferiti".
-     * Per ora è solo UI (non salva davvero).
-     */
     @FXML
     private void onAggiungiAiPreferiti() {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
@@ -137,29 +164,58 @@ public class RestaurantDetailsController {
         a.showAndWait();
     }
 
-    /**
-     * Handler del pulsante "Chiudi".
-     * Chiude la finestra dei dettagli.
-     */
     @FXML
     private void onChiudi() {
         Stage st = (Stage) etichettaNome.getScene().getWindow();
         st.close();
     }
 
-    /**
-     * Apre un URL esterno all’interno della stessa WebView.
-     * Per ora viene usato per il sito del ristorante.
-     */
-    private void apriEsterno(String url) {
-        if (vistaMappa != null) {
+    // --- sito web nella WebView ---
+
+    private void apriInWebView(String url) {
+        if (vistaMappa != null && url != null && !url.isBlank()) {
             vistaMappa.getEngine().load(url);
         }
     }
 
-    /**
-     * Restituisce stringa vuota se il valore è null, altrimenti la stringa originale.
-     */
+    private void mostraMessaggioNessunSito() {
+        if (vistaMappa != null) {
+            String html = """
+                    <html>
+                      <body style="font-family: Arial; color:#444; padding: 12px;">
+                        <p>Nessun sito web disponibile per questo ristorante.</p>
+                      </body>
+                    </html>
+                    """;
+            vistaMappa.getEngine().loadContent(html);
+        }
+    }
+
+    // --- apertura browser esterno per Google Maps ---
+
+    private void apriNelBrowser(String url) {
+        if (url == null || url.isBlank()) return;
+
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(new URI(url));
+            } else {
+                Alert a = new Alert(Alert.AlertType.WARNING);
+                a.setTitle("Apertura link");
+                a.setHeaderText(null);
+                a.setContentText("Impossibile aprire il browser automaticamente.\nURL: " + url);
+                a.showAndWait();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert a = new Alert(Alert.AlertType.ERROR);
+            a.setTitle("Errore apertura link");
+            a.setHeaderText(null);
+            a.setContentText("Non sono riuscito ad aprire il link:\n" + url);
+            a.showAndWait();
+        }
+    }
+
     private String valoreNonNullo(String s) {
         return s == null ? "" : s;
     }

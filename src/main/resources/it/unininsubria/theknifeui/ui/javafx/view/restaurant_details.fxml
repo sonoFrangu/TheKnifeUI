@@ -16,24 +16,37 @@
         <Insets top="16" right="16" bottom="16" left="16"/>
     </padding>
 
+    <!-- HEADER -->
     <HBox spacing="10" styleClass="details-header">
+        <!-- Parte sinistra: nome, indirizzo, città -->
         <VBox spacing="4" HBox.hgrow="ALWAYS">
             <Label fx:id="etichettaNome" styleClass="restaurant-name"/>
+
             <HBox spacing="4">
                 <Label text="📍" styleClass="details-line"/>
                 <Label fx:id="etichettaIndirizzo" styleClass="details-line"/>
             </HBox>
+
             <HBox spacing="4">
                 <Label text="🏙️" styleClass="details-line"/>
                 <Label fx:id="etichettaCitta" styleClass="details-line"/>
             </HBox>
         </VBox>
-        <Button fx:id="bottonePreferiti"
-                text="Aggiungi ai preferiti"
-                onAction="#onAggiungiAiPreferiti"
-                styleClass="details-fav-btn"/>
+
+        <!-- Parte destra: bottoni -->
+        <HBox spacing="8" alignment="CENTER_RIGHT">
+            <Button fx:id="bottoneApriMaps"
+                    text="Apri in Maps"
+                    onAction="#onApriMaps"
+                    styleClass="details-fav-btn"/>
+            <Button fx:id="bottonePreferiti"
+                    text="Aggiungi ai preferiti"
+                    onAction="#onAggiungiAiPreferiti"
+                    styleClass="details-fav-btn"/>
+        </HBox>
     </HBox>
 
+    <!-- INFO PANEL -->
     <GridPane hgap="12" vgap="6" styleClass="details-info-panel">
         <columnConstraints>
             <ColumnConstraints percentWidth="30"/>
@@ -57,7 +70,7 @@
         </children>
     </GridPane>
 
-    <Label text="Mappa o Sito web" styleClass="details-section-title"/>
+    <Label text="Sito web" styleClass="details-section-title"/>
 
     <WebView fx:id="vistaMappa"
              prefWidth="680.0"
