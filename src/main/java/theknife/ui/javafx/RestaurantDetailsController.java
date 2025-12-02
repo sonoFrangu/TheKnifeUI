@@ -191,7 +191,6 @@ public class RestaurantDetailsController {
         }
     }
 
-    // --- apertura browser esterno per Google Maps ---
 
     private void apriNelBrowser(String url) {
         if (url == null || url.isBlank()) return;

@@ -15,8 +15,10 @@
     <top>
         <VBox alignment="CENTER" spacing="5" styleClass="top-bar">
             <ImageView fx:id="appLogo"
-                       fitHeight="100"
-                       preserveRatio="true">
+                       fitHeight="150"
+                       preserveRatio="true"
+                       smooth="true"
+                       cache="true">
                 <image>
                     <Image url="@../img/logo_theknife.png"/>
                 </image>
